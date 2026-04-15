@@ -1,0 +1,24 @@
+# Uncomment if you need change defaults
+#
+# port = 49105 							# Optional, defauilt is 49105
+# http_port = 8090						# Optional, defauilt is 8090
+# max_connections = 1000					# Optional, defauilt is 1000
+# worker_pool_size = 100					# Optional, defauilt is 100
+# packet_size = 512						# Optional, defauilt is 512
+# http_secret = "secret"					# Optional, defauilt is `secret`
+# basic_auth_user = "user"				# Optional, defauilt is `user`
+# basic_auth_pass = "password"			# Optional, defauilt is `password`
+# store_path = "./"						# Optional, defauilt is `./`
+
+# ## Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+# read_timeout = "100ms" 					# Optional, defauilt is 100ms
+# write_timeout = "100ms" 				# Optional, defauilt is 100ms
+# shutdown_timeout = "5s" 				# Optional, defauilt is 5s
+# cleanup_interval = "12h" 				# Optional, defauilt is 12h
+# ttl = "48h" 							# Optional, defauilt is 48h
+
+# Groups list, required,
+[[groups]]
+name = "default" 			# required, no defaults
+rate = 0.25 				# required, no defaults
+burst = 1					# required, no defaults

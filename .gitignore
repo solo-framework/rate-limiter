@@ -1,0 +1,16 @@
+ratelimiter/tmp/tmp.go
+*.out
+*.txt
+cpu.out
+mem.out
+pprof/
+# Added by goreleaser init:
+dist/
+.env
+docker/ratelimiter
+docker/dist.config.toml
+config.toml
+build/
+docker/build/out
+data.bin
+*.class
