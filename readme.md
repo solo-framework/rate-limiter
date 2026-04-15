@@ -141,7 +141,7 @@ api:f3624d34efa74ce6bb676a607ae6f1e2
 | --- | --- | --- | --- |
 | `port` | `uint` | `49105` | порт TCP сервера |
 | `http_port` | `uint` | `8090` | порт HTTP control API |
-| `max_connections` | `int` | `10000` | максимальное число одновременных TCP соединений к сервису |
+| `max_connections` | `int` | `1000` | максимальное число одновременных TCP соединений к сервису |
 | `worker_pool_size` | `int` | `100` | размер пула воркеров |
 | `read_timeout` | `duration` | `100ms` | таймаут чтения TCP запроса |
 | `write_timeout` | `duration` | `100ms` | таймаут записи TCP ответа |
