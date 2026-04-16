@@ -34,8 +34,8 @@ func NewServer(logger logger.ILogger, config *config.Config, requestHandler IReq
 		listener: nil,
 		config:   config,
 		// we shouldn't store context in struct (see https://go.dev/blog/context-and-structs)
-		// but here we have very plain use case with context - just stopping service. No another actions.
-		// So let's store.
+		// but here we have very plain use case with context - just stopping service. No other actions.
+		// So let's keep it.
 		ctx:             ctx,
 		cancelFn:        cancelFn,
 		logger:          logger,
