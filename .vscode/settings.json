@@ -1,0 +1,72 @@
+{
+	// <-- цветовая схема
+	// настройки language сервера для подветки кода
+	"gopls": {
+		"ui.semanticTokens": true,
+	},
+	"editor.semanticTokenColorCustomizations": {
+		// курсив - интерфейсы
+		// желтый - указатели
+		// морской зеленый Крайола - namespaces
+		// белый - методы/функции
+		// цвет Перу - структуры
+		// папоротник - строки
+		// фиолетовый оттенок - константы
+		"enabled": true, // вкл/выкл кастомизацию
+		// применяем только к цветовой схеме Visual Studio Dark
+		"[Visual Studio Dark]": {
+			// определение semantic token type
+			// ctrl+shift+p => Developer: Inspect Editor Tokens and Scopes
+			"rules": {
+				"namespace": "#9ee0c0",
+				"comment": "#8c8888",
+				"string": "#5dbb69",
+				"method.definition.signature": "#ffffff",
+				"method.signature": "#ffffff",
+				"function.signature": "#ffffff",
+				"type.definition.struct": {
+					"fontStyle": "bold",
+					"foreground": "#ca8044"
+				},
+				"type.struct": "#ca8044",
+				"type.defaultLibrary.interface": {
+					"foreground": "#569CD6",
+				},
+				"type.interface": {
+					"fontStyle": "italic",
+					"foreground": "#D4D4D4"
+				},
+				"type.definition.interface": {
+					"fontStyle": "italic",
+					"foreground": "#D4D4D4"
+				},
+				"parameter.interface": {
+					"fontStyle": "italic"
+				},
+				"parameter.pointer": {
+					"foreground": "#cfc427",
+				},
+				"variable.pointer": "#cfc427",
+				"variable.interface": {
+					"fontStyle": "italic",
+					"foreground": "#D4D4D4"
+				},
+				"variable.definition.struct": {
+					"foreground": "#ca8044"
+				},
+				"variable.struct": {
+					"foreground": "#ca8044"
+				},
+				// constants
+				"variable.definition.readonly": "#bb97d0",
+				"variable.readonly": "#bb97d0",
+				// nil
+				"variable.readonly.defaultLibrary": {
+					"bold": true,
+					"foreground": "#569CD6"
+				}
+			}
+		}
+	},
+	// цветовая схема -->
+}
