@@ -1,19 +1,25 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"flag"
 	"fmt"
+	"log/slog"
+	"os/signal"
+	"syscall"
 
 	// _ "net/http/pprof"
 	"os"
-	"os/signal"
-	"ratelimiter/control"
+	// "os/signal"
+	// "ratelimiter/control"
 	"ratelimiter/internal"
+	"ratelimiter/internal/app"
+	"ratelimiter/internal/closer"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
-	"ratelimiter/service"
-	"syscall"
+	// "go.uber.org/zap"
+	// "ratelimiter/service"
+	// "syscall"
 )
 
 var (
@@ -56,109 +62,156 @@ func main() {
 		os.Exit(1)
 	}
 
-	// logger
-	logger.InitLogger(env)
-	logger := logger.GetLogger()
-	logger.Debug("config", "config", config.AppConfig())
+	stopSignals := []os.Signal{syscall.SIGINT, syscall.SIGTERM}
 
-	// define stop signals
-	stopCh := make(chan os.Signal, 1)
-	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
+	appCtx, appCancel := signal.NotifyContext(context.Background(), stopSignals...)
+	defer appCancel()
+	defer gracefulShutdown()
 
-	// add default group
-	groups := config.AppConfig().Groups
-	// time provider
-	timeProvider := service.NewTimeProvider() // *
-
-	// create limit manager
-	manager, err := service.NewManager(groups, config.AppConfig().TTL, config.AppConfig().CleanupInterval, timeProvider) //
-	if err != nil {
-		logger.Error("can't create limit manager: ", "error", err)
-		os.Exit(1)
-	}
-
-	logger.Info("starting services...")
-
-	// load saved groups
-	ok, err = manager.LoadGroupsFromFile(config.AppConfig().StorePath)
-	if err != nil {
-		logger.Error("can't load groups from file", "error", err)
-		os.Exit(1)
-	}
-	if ok {
-		logger.Info("stored groups loaded")
-	}
-
-	httpLogger := logger.With("app", "http")
-	// start control server
-	methods := control.NewControlMethods(manager)
-	router := control.NewRouter(*methods, *config.AppConfig(), httpLogger)
-	controlServer := control.NewControlServer(*config.AppConfig(), httpLogger, router)
-
-	go func() {
-		err := controlServer.Start()
-		if err != nil {
-			logger.Error("can't start control server", "error", err)
-			os.Exit(1)
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok {
+				logger.GetLogger().Error("PANIC", slog.Any("error", e)) // нужно ли???
+			} else {
+				logger.GetLogger().Error("PANIC", slog.Any("error", r))
+			}
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("control server started at %d", config.AppConfig().HttpPort))
-
-	// start limit cleanup service
-	go manager.StartCleanup()
-
-	// request processing
-	requestHandler := service.NewRequestHandler(manager, logger)
-
-	logger.Info(fmt.Sprintf("config: ratelimit port %d", config.AppConfig().Port))
-	logger.Info(fmt.Sprintf("config: ratelimit groups count %d", config.AppConfig().Groups.Count()))
-
-	// start rate limiter server
-	srvLogger := logger.With("app", "rate")
-	server := service.NewServer(srvLogger, config.AppConfig(), requestHandler)
-	err = server.Start()
+	application, err := app.New(appCtx, env)
 	if err != nil {
-		logger.Error("ratelimit service start failed: ", "error", err)
-		os.Exit(1)
+		logger.GetLogger().Error("❌ Не удалось создать приложение", slog.Any("error", err))
+		return
 	}
 
-	logger.Info(fmt.Sprintf("ratelimit server started at %d", config.AppConfig().Port))
-	logger.Info("all services are started, waiting signals...")
+	closer.ConfigureWithContext(appCtx)
 
-	// waiting a signal
-	code := <-stopCh
-	logger.Info(fmt.Sprintf("recieved signal '%s', starting shutdown...", code.String()))
-
-	// stop cleanup service
-	manager.StopCleanup()
-
-	// save groups settings into file
-	err = manager.SaveGoupsToFile(config.AppConfig().StorePath)
+	err = application.Run(appCtx)
 	if err != nil {
-		logger.Error("manager: can't save groups to file", "error", err)
-	} else {
-		logger.Info(fmt.Sprintf("manager: groups saved into dir '%s'", config.AppConfig().StorePath))
+		logger.GetLogger().Error("❌ Не удалось запустить приложение", slog.Any("error", err))
+		return
 	}
 
-	// shutdown server
-	if err = server.Shutdown(); err != nil {
-		if errors.Is(err, service.ErrShutdown) {
-			logger.Warn("all connections are closed by timeout")
-		}
-	} else {
-		logger.Info("all connections are closed gracefully")
-	}
+	// <-appCtx.Done()
+	// fmt.Println("FINISH")
+	logger.GetLogger().Info("finish")
+	// os.Exit(0)
 
-	logger.Info("ratelimit service stopped")
+	// logger
+	// logger.InitLogger(env)
+	// logger := logger.GetLogger()
+	// logger.Debug("config", "config", config.AppConfig())
 
-	// stop control server
-	err = controlServer.Shutdown()
-	if err != nil {
-		logger.Error("control server stopping error", "error", err)
-	}
-	logger.Info("control server stopped")
-	logger.Info("bye-bye!")
+	// // define stop signals
+	// stopCh := make(chan os.Signal, 1)
+	// signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 
-	os.Exit(0)
+	// // add default group
+	// groups := config.AppConfig().Groups
+	// // time provider
+	// timeProvider := service.NewTimeProvider() // *
+
+	// // create limit manager
+	// manager, err := service.NewManager(groups, config.AppConfig().TTL, config.AppConfig().CleanupInterval, timeProvider) //
+	// if err != nil {
+	// 	logger.Error("can't create limit manager: ", "error", err)
+	// 	os.Exit(1)
+	// }
+
+	// logger.Info("starting services...")
+
+	// // load saved groups
+	// ok, err = manager.LoadGroupsFromFile(config.AppConfig().StorePath)
+	// if err != nil {
+	// 	logger.Error("can't load groups from file", "error", err)
+	// 	os.Exit(1)
+	// }
+	// if ok {
+	// 	logger.Info("stored groups loaded")
+	// }
+
+	// httpLogger := logger.With("app", "http")
+	// // start control server
+	// methods := control.NewControlMethods(manager)
+	// router := control.NewRouter(*methods, *config.AppConfig(), httpLogger)
+	// controlServer := control.NewControlServer(*config.AppConfig(), httpLogger, router)
+
+	// go func() {
+	// 	err := controlServer.Start()
+	// 	if err != nil {
+	// 		logger.Error("can't start control server", "error", err)
+	// 		os.Exit(1)
+	// 	}
+	// }()
+
+	// logger.Info(fmt.Sprintf("control server started at %d", config.AppConfig().HttpPort))
+
+	// // start limit cleanup service
+	// go manager.StartCleanup()
+
+	// // request processing
+	// requestHandler := service.NewRequestHandler(manager, logger)
+
+	// logger.Info(fmt.Sprintf("config: ratelimit port %d", config.AppConfig().Port))
+	// logger.Info(fmt.Sprintf("config: ratelimit groups count %d", config.AppConfig().Groups.Count()))
+
+	// // start rate limiter server
+	// srvLogger := logger.With("app", "rate")
+	// server := service.NewServer(srvLogger, config.AppConfig(), requestHandler)
+	// err = server.Start()
+	// if err != nil {
+	// 	logger.Error("ratelimit service start failed: ", "error", err)
+	// 	os.Exit(1)
+	// }
+
+	// logger.Info(fmt.Sprintf("ratelimit server started at %d", config.AppConfig().Port))
+	// logger.Info("all services are started, waiting signals...")
+
+	// // waiting a signal
+	// code := <-stopCh
+	// logger.Info(fmt.Sprintf("recieved signal '%s', starting shutdown...", code.String()))
+
+	// // stop cleanup service
+	// manager.StopCleanup()
+
+	// // save groups settings into file
+	// err = manager.SaveGoupsToFile(config.AppConfig().StorePath)
+	// if err != nil {
+	// 	logger.Error("manager: can't save groups to file", "error", err)
+	// } else {
+	// 	logger.Info(fmt.Sprintf("manager: groups saved into dir '%s'", config.AppConfig().StorePath))
+	// }
+
+	// // shutdown server
+	// if err = server.Shutdown(); err != nil {
+	// 	if errors.Is(err, service.ErrShutdown) {
+	// 		logger.Warn("all connections are closed by timeout")
+	// 	}
+	// } else {
+	// 	logger.Info("all connections are closed gracefully")
+	// }
+
+	// logger.Info("ratelimit service stopped")
+
+	// // stop control server
+	// err = controlServer.Shutdown()
+	// if err != nil {
+	// 	logger.Error("control server stopping error", "error", err)
+	// }
+	// logger.Info("control server stopped")
+	// logger.Info("bye-bye!")
+
+	// os.Exit(0)
+}
+
+func gracefulShutdown() {
+
+	// fmt.Println("!!!!!!!!!!!!!!!!graceful shutdown!!!!!!!!!!!!!!")
+	logger.GetLogger().Info("!!!!!!!!!!!!!!!!graceful shutdown!!!!!!!!!!!!!!")
+	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// defer cancel()
+
+	// if err := closer.CloseAll(ctx); err != nil {
+	// 	logger.Error(ctx, "❌ Ошибка при завершении работы", zap.Error(err))
+	// }
 }

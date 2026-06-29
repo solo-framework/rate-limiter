@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"ratelimiter/internal/closer"
 	"ratelimiter/internal/logger"
 )
 
@@ -24,7 +25,9 @@ func New(ctx context.Context, mode string) (*app, error) {
 	return app, nil
 }
 
-func (s *app) Run() error {
+func (s *app) Run(ctx context.Context) error {
+
+	<-ctx.Done()
 	return nil
 }
 
@@ -51,15 +54,19 @@ func (s *app) initDeps(ctx context.Context) error {
 
 func (s *app) initDI(_ context.Context) error {
 	s.di = NewDIContainer()
+	// logger.GetLogger().Info("DI initialized")
 	return nil
 }
 
 func (s *app) initLogger(_ context.Context) error {
 	logger.InitLogger(s.mode)
+	logger.GetLogger().Info("logger initialized")
 	return nil
 }
 
 func (s *app) initCloser(_ context.Context) error {
-	SetLogger(logger.GetLogger())
+
+	closer.SetLogger(logger.GetLogger())
+	logger.GetLogger().Info("Closer initialized")
 	return nil
 }

@@ -3,6 +3,7 @@ package logger
 import (
 	"log/slog"
 	"os"
+	"sync"
 )
 
 type ILogger interface {
@@ -15,11 +16,20 @@ type ILogger interface {
 
 var globalLogger *slog.Logger
 
+// var mu sync.Mutex
+var initOnce sync.Once
+
 // InitLogger creates new logger or
 func InitLogger(env string) {
-	if globalLogger == nil {
 
-		var lgr *slog.Logger
+	// mu.Lock()
+	// defer mu.Unlock()
+
+	// if globalLogger == nil {
+
+	// var lgr *slog.Logger
+
+	initOnce.Do(func() {
 
 		if env == "dev" {
 			opts := slog.HandlerOptions{
@@ -28,7 +38,7 @@ func InitLogger(env string) {
 			}
 
 			handler := slog.NewTextHandler(os.Stdout, &opts)
-			lgr = slog.New(handler)
+			globalLogger = slog.New(handler)
 
 		} else {
 
@@ -38,11 +48,13 @@ func InitLogger(env string) {
 			}
 
 			handler := slog.NewJSONHandler(os.Stdout, &opts)
-			lgr = slog.New(handler)
+			globalLogger = slog.New(handler)
 		}
+	})
+	// globalLogger = lgr
+	// }
 
-		globalLogger = lgr
-	}
+	// })
 }
 
 func CloseLogger() {
@@ -56,4 +68,8 @@ func GetLogger() *slog.Logger {
 		panic("globalLogger is not initialized, call InitLogger()")
 	}
 	return globalLogger
+}
+
+func DummyLogger() *slog.Logger {
+	return slog.New(slog.DiscardHandler)
 }

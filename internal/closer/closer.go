@@ -1,8 +1,9 @@
-package app
+package closer
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"ratelimiter/internal/logger"
 	"sync"
@@ -21,29 +22,9 @@ type Closer struct {
 	logger logger.ILogger                //slog.Logger                   // Используемый логгер
 }
 
-var globalCloser = create()
+var globalCloser = create(logger.DummyLogger())
 
 // global functions
-
-// SetLogger устанавливает логгер
-func SetLogger(logger logger.ILogger) {
-	globalCloser.SetLogger(logger)
-}
-
-func create() *Closer {
-	return &Closer{
-		done:   make(chan struct{}),
-		logger: slog.Default(),
-	}
-}
-
-func (s *Closer) SetLogger(logger logger.ILogger) {
-	s.logger = logger
-}
-
-func ConfigureWithContext(appContext context.Context) {
-	go globalCloser.handleSignals(appContext)
-}
 
 // handleSignals обрабатывает системные сигналы и вызывает CloseAll с fresh shutdown context
 func (s *Closer) handleSignals(appContext context.Context) {
@@ -141,4 +122,59 @@ func (s *Closer) CloseAll(ctx context.Context) error {
 	})
 
 	return result
+}
+
+// Add добавляет одну или несколько функций закрытия
+func (s *Closer) Add(f ...func(context.Context) error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.funcs = append(s.funcs, f...)
+}
+
+// AddNamed добавляет функцию закрытия с именем зависимости для логирования
+func (s *Closer) AddNamed(name string, f func(context.Context) error) {
+	s.Add(func(ctx context.Context) error {
+		start := time.Now()
+		s.logger.Info(fmt.Sprintf("🧩 Закрываем %s...", name))
+
+		err := f(ctx)
+
+		duration := time.Since(start)
+		if err != nil {
+			s.logger.Error(fmt.Sprintf("❌ Ошибка при закрытии %s: %v (заняло %s)", name, err, duration))
+		} else {
+			s.logger.Info(fmt.Sprintf("✅ %s успешно закрыт за %s", name, duration))
+		}
+		return err
+	})
+}
+
+// SetLogger устанавливает логгер
+func SetLogger(logger logger.ILogger) {
+	globalCloser.SetLogger(logger)
+}
+
+func create(log *slog.Logger) *Closer {
+	return &Closer{
+		done:   make(chan struct{}),
+		logger: log,
+	}
+}
+
+func (s *Closer) SetLogger(logger logger.ILogger) {
+	s.logger = logger
+}
+
+func ConfigureWithContext(appContext context.Context) {
+	go globalCloser.handleSignals(appContext)
+}
+
+// AddNamed добавляет функцию закрытия с именем зависимости для логирования в глобальный closer
+func AddNamed(name string, f func(context.Context) error) {
+	globalCloser.AddNamed(name, f)
+}
+
+// Add добавляет функции закрытия в глобальный closer
+func Add(f ...func(context.Context) error) {
+	globalCloser.Add(f...)
 }

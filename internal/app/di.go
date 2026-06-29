@@ -1,8 +1,10 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"ratelimiter/control"
+	"ratelimiter/internal/closer"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
 	"ratelimiter/service"
@@ -68,6 +70,11 @@ func (s *diContainer) ServiceManager() *service.Manager {
 		if err != nil {
 			panic(fmt.Sprintf("failed to create service manager: %s", err))
 		}
+
+		closer.AddNamed("cleanup service manager", func(ctx context.Context) error {
+			s.serviceManager.CleanUp()
+			return nil
+		})
 
 		s.serviceManager = manager
 	}
