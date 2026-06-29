@@ -16,9 +16,11 @@ import (
 
 func TestNewRequestHandler(t *testing.T) {
 
+	logger.InitLogger("dev")
+
 	rh := service.NewRequestHandler(
 		&service.Manager{},
-		logger.GetLogger("dev"),
+		logger.GetLogger(),
 	)
 
 	require.NotNil(t, rh)

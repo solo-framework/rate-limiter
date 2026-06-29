@@ -41,19 +41,21 @@ func captureStdout(t *testing.T, fn func()) string {
 	if err := r.Close(); err != nil {
 		t.Fatalf("failed to close reader: %v", err)
 	}
-
 	return buf.String()
 }
 
 func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
+
 	output := captureStdout(t, func() {
-		logger := GetLogger("dev")
+		InitLogger("dev")
+		logger := GetLogger()
 		logger.Info("hello")
 		logger.Debug("dbg")
+		CloseLogger()
 	})
 
 	if !strings.Contains(output, "msg=hello") {
-		t.Fatalf("expected info message in output, got: %s", output)
+		t.Fatalf("expected info message in output, got: '%s'", output)
 	}
 	if !strings.Contains(output, "msg=dbg") {
 		t.Fatalf("expected debug message in output, got: %s", output)
@@ -67,10 +69,13 @@ func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
 }
 
 func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
+
 	output := captureStdout(t, func() {
-		logger := GetLogger("prod")
+		InitLogger("prod")
+		logger := GetLogger()
 		logger.Info("hello")
 		logger.Debug("dbg")
+		CloseLogger()
 	})
 
 	trimmed := strings.TrimSpace(output)
@@ -91,13 +96,16 @@ func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
 func TestLogger_SecretReplace(t *testing.T) {
 
 	output := captureStdout(t, func() {
-		logger := GetLogger("dev")
+		InitLogger("dev")
+		logger := GetLogger()
 		logger.Debug("hello", "config", getConfig())
+		CloseLogger()
 	})
 
 	require.Contains(t, output, "HttpSecret: [censored]")
 	require.Contains(t, output, "BasicAuthUser: [censored]")
 	require.Contains(t, output, "BasicAuthPass: [censored]")
+
 }
 
 func getConfig() *config.Config {

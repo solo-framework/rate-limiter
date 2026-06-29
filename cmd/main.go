@@ -50,27 +50,28 @@ func main() {
 		os.Exit(2)
 	}
 
-	cfg, err := config.LoadConfig(*configPath)
+	err := config.LoadConfig(*configPath)
 	if err != nil {
 		fmt.Printf("config load failed: %v", err)
 		os.Exit(1)
 	}
 
 	// logger
-	logger := logger.GetLogger(env)
-	logger.Debug("config", "config", cfg)
+	logger.InitLogger(env)
+	logger := logger.GetLogger()
+	logger.Debug("config", "config", config.AppConfig())
 
 	// define stop signals
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 
 	// add default group
-	groups := cfg.Groups
+	groups := config.AppConfig().Groups
 	// time provider
-	timeProvider := service.NewTimeProvider()
+	timeProvider := service.NewTimeProvider() // *
 
 	// create limit manager
-	manager, err := service.NewManager(groups, cfg.TTL, cfg.CleanupInterval, timeProvider)
+	manager, err := service.NewManager(groups, config.AppConfig().TTL, config.AppConfig().CleanupInterval, timeProvider) //
 	if err != nil {
 		logger.Error("can't create limit manager: ", "error", err)
 		os.Exit(1)
@@ -79,7 +80,7 @@ func main() {
 	logger.Info("starting services...")
 
 	// load saved groups
-	ok, err = manager.LoadGroupsFromFile(cfg.StorePath)
+	ok, err = manager.LoadGroupsFromFile(config.AppConfig().StorePath)
 	if err != nil {
 		logger.Error("can't load groups from file", "error", err)
 		os.Exit(1)
@@ -91,8 +92,8 @@ func main() {
 	httpLogger := logger.With("app", "http")
 	// start control server
 	methods := control.NewControlMethods(manager)
-	router := control.NewRouter(*methods, *cfg, httpLogger)
-	controlServer := control.NewControlServer(*cfg, httpLogger, router)
+	router := control.NewRouter(*methods, *config.AppConfig(), httpLogger)
+	controlServer := control.NewControlServer(*config.AppConfig(), httpLogger, router)
 
 	go func() {
 		err := controlServer.Start()
@@ -102,7 +103,7 @@ func main() {
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("control server started at %d", cfg.HttpPort))
+	logger.Info(fmt.Sprintf("control server started at %d", config.AppConfig().HttpPort))
 
 	// start limit cleanup service
 	go manager.StartCleanup()
@@ -110,19 +111,19 @@ func main() {
 	// request processing
 	requestHandler := service.NewRequestHandler(manager, logger)
 
-	logger.Info(fmt.Sprintf("config: ratelimit port %d", cfg.Port))
-	logger.Info(fmt.Sprintf("config: ratelimit groups count %d", cfg.Groups.Count()))
+	logger.Info(fmt.Sprintf("config: ratelimit port %d", config.AppConfig().Port))
+	logger.Info(fmt.Sprintf("config: ratelimit groups count %d", config.AppConfig().Groups.Count()))
 
 	// start rate limiter server
 	srvLogger := logger.With("app", "rate")
-	server := service.NewServer(srvLogger, cfg, requestHandler)
+	server := service.NewServer(srvLogger, config.AppConfig(), requestHandler)
 	err = server.Start()
 	if err != nil {
 		logger.Error("ratelimit service start failed: ", "error", err)
 		os.Exit(1)
 	}
 
-	logger.Info(fmt.Sprintf("ratelimit server started at %d", cfg.Port))
+	logger.Info(fmt.Sprintf("ratelimit server started at %d", config.AppConfig().Port))
 	logger.Info("all services are started, waiting signals...")
 
 	// waiting a signal
@@ -133,11 +134,11 @@ func main() {
 	manager.StopCleanup()
 
 	// save groups settings into file
-	err = manager.SaveGoupsToFile(cfg.StorePath)
+	err = manager.SaveGoupsToFile(config.AppConfig().StorePath)
 	if err != nil {
 		logger.Error("manager: can't save groups to file", "error", err)
 	} else {
-		logger.Info(fmt.Sprintf("manager: groups saved into dir '%s'", cfg.StorePath))
+		logger.Info(fmt.Sprintf("manager: groups saved into dir '%s'", config.AppConfig().StorePath))
 	}
 
 	// shutdown server

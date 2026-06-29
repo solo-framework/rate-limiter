@@ -13,28 +13,47 @@ type ILogger interface {
 	With(args ...any) *slog.Logger
 }
 
-func GetLogger(env string) *slog.Logger {
+var globalLogger *slog.Logger
 
-	var logger *slog.Logger
+// InitLogger creates new logger or
+func InitLogger(env string) {
+	if globalLogger == nil {
 
-	if env == "dev" {
-		opts := slog.HandlerOptions{
-			AddSource: true,
-			Level:     slog.LevelDebug,
+		var lgr *slog.Logger
+
+		if env == "dev" {
+			opts := slog.HandlerOptions{
+				AddSource: true,
+				Level:     slog.LevelDebug,
+			}
+
+			handler := slog.NewTextHandler(os.Stdout, &opts)
+			lgr = slog.New(handler)
+
+		} else {
+
+			opts := slog.HandlerOptions{
+				AddSource: false,
+				Level:     slog.LevelInfo,
+			}
+
+			handler := slog.NewJSONHandler(os.Stdout, &opts)
+			lgr = slog.New(handler)
 		}
 
-		handler := slog.NewTextHandler(os.Stdout, &opts)
-		logger = slog.New(handler)
-
-	} else {
-
-		opts := slog.HandlerOptions{
-			AddSource: false,
-			Level:     slog.LevelInfo,
-		}
-
-		handler := slog.NewJSONHandler(os.Stdout, &opts)
-		logger = slog.New(handler)
+		globalLogger = lgr
 	}
-	return logger
+}
+
+func CloseLogger() {
+	globalLogger = nil
+}
+
+// GetLogger  return if exists
+func GetLogger() *slog.Logger {
+
+	if globalLogger == nil {
+		panic("globalLogger is not initialized, call InitLogger()")
+	}
+	return globalLogger
 }

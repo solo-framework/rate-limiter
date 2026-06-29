@@ -31,6 +31,12 @@ type Config struct {
 
 }
 
+var globalConfig *Config
+
+func AppConfig() *Config {
+	return globalConfig
+}
+
 func (s *Config) String() string {
 
 	sb := strings.Builder{}
@@ -87,7 +93,7 @@ type groupsDTO struct {
 	Burst int     `validate:"required,gt=0"`
 }
 
-func LoadConfig(path string) (*Config, error) {
+func LoadConfig(path string) error {
 
 	// see https://deepwiki.com/spf13/viper/1.2-key-concepts#precedence-rules
 	v := viper.New()
@@ -115,12 +121,12 @@ func LoadConfig(path string) (*Config, error) {
 	v.SetDefault("store_path", "./")
 
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("read config error: %w", err)
+		return fmt.Errorf("read config error: %w", err)
 	}
 
 	var dto configDTO
 	if err := v.Unmarshal(&dto); err != nil {
-		return nil, fmt.Errorf("unmarshal config error: %w", err)
+		return fmt.Errorf("unmarshal config error: %w", err)
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
@@ -131,9 +137,10 @@ func LoadConfig(path string) (*Config, error) {
 		if errors.As(err, &ve) {
 			for _, e := range ve {
 				fmt.Fprintf(&res, "%s has wrong value `%v` [must be %s %s] ", e.Field(), e.Value(), e.Tag(), e.Param())
+				// return fmt.Errorf("%s has wrong value `%v` [must be %s %s] ", e.Field(), e.Value(), e.Tag(), e.Param())
 			}
 		}
-		return nil, fmt.Errorf("config validation error: %s", &res)
+		return fmt.Errorf("config validation error: %s", &res)
 	}
 
 	// Build final config structure
@@ -160,9 +167,10 @@ func LoadConfig(path string) (*Config, error) {
 	for _, g := range dto.Groups {
 		err := cfg.Groups.Add(g.Name, g.Rate, g.Burst) //
 		if err != nil {
-			return nil, fmt.Errorf("group validation error: %w", err)
+			return fmt.Errorf("group validation error: %w", err)
 		}
 	}
 
-	return cfg, nil
+	globalConfig = cfg
+	return nil
 }

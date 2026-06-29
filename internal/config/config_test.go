@@ -49,9 +49,9 @@ rate = 200.0
 burst = 1000
 `
 	path := createTempConfigFile(t, content)
-	defer os.Remove(path)
+	defer os.Remove(path) // nolint
 
-	cfg, err := LoadConfig(path)
+	err := LoadConfig(path)
 
 	// check no error
 	if err != nil {
@@ -59,12 +59,12 @@ burst = 1000
 	}
 
 	// check base fields
-	if cfg.Port != 9000 {
-		t.Errorf("Expected port 9000, got %d", cfg.Port)
+	if AppConfig().Port != 9000 {
+		t.Errorf("Expected port 9000, got %d", AppConfig().Port)
 	}
 
 	// check group was added via Add method
-	groups := cfg.Groups.List()
+	groups := AppConfig().Groups.List()
 	if len(groups) != 1 {
 		t.Errorf("Expected 1 group, got %d", len(groups))
 	}
@@ -74,7 +74,7 @@ burst = 1000
 }
 
 func Test_LoadConfig_FileNotFound(t *testing.T) {
-	_, err := LoadConfig("nonexistent.toml")
+	err := LoadConfig("nonexistent.toml")
 	if err == nil {
 		t.Fatal("Expected error due to non-existent file, but got nil")
 	}
@@ -91,7 +91,7 @@ Burst = 1
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	_, err := LoadConfig(path)
+	err := LoadConfig(path)
 	if err == nil {
 		t.Fatal("Expected error due to invalid format, but got nil")
 	}
@@ -124,7 +124,7 @@ burst = 1000
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	_, err := LoadConfig(path)
+	err := LoadConfig(path)
 	fmt.Println(err)
 	// expect validation error from group.go
 	if err == nil {
@@ -164,14 +164,14 @@ burst = 1000
 	os.Setenv("RATE_LIMITER_PORT", "7777")
 	defer os.Unsetenv("RATE_LIMITER_PORT")
 
-	cfg, err := LoadConfig(path)
+	err := LoadConfig(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// ENV value should take priority over file value
-	if cfg.Port != 7777 {
-		t.Errorf("Expected port 7777 (from ENV), got %d", cfg.Port)
+	if AppConfig().Port != 7777 {
+		t.Errorf("Expected port 7777 (from ENV), got %d", AppConfig().Port)
 	}
 }
 
@@ -201,14 +201,14 @@ burst = 1000
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	cfg, err := LoadConfig(path)
+	err := LoadConfig(path)
 	require.NoError(t, err)
 
-	assert.Equal(t, time.Millisecond*100, cfg.WriteTimeout)
-	assert.Equal(t, time.Second*100, cfg.ReadTimeout)
-	assert.Equal(t, time.Minute*3+time.Second*20, cfg.ShutdownTimeout)
-	assert.Equal(t, time.Hour*10, cfg.CleanupInterval)
-	assert.Equal(t, time.Hour*24, cfg.TTL)
+	assert.Equal(t, time.Millisecond*100, AppConfig().WriteTimeout)
+	assert.Equal(t, time.Second*100, AppConfig().ReadTimeout)
+	assert.Equal(t, time.Minute*3+time.Second*20, AppConfig().ShutdownTimeout)
+	assert.Equal(t, time.Hour*10, AppConfig().CleanupInterval)
+	assert.Equal(t, time.Hour*24, AppConfig().TTL)
 }
 
 func TestLoadConfig_Defaults(t *testing.T) {
@@ -223,24 +223,24 @@ burst = 1000
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	cfg, err := LoadConfig(path)
+	err := LoadConfig(path)
 	require.NoError(t, err)
 
-	assert.Equal(t, uint(49105), cfg.Port)
-	assert.Equal(t, uint(8090), cfg.HttpPort)
-	assert.Equal(t, 1000, cfg.MaxConnections)
-	assert.Equal(t, 100, cfg.WorkerPoolSize)
-	assert.Equal(t, 512, cfg.PacketSize)
+	assert.Equal(t, uint(49105), AppConfig().Port)
+	assert.Equal(t, uint(8090), AppConfig().HttpPort)
+	assert.Equal(t, 1000, AppConfig().MaxConnections)
+	assert.Equal(t, 100, AppConfig().WorkerPoolSize)
+	assert.Equal(t, 512, AppConfig().PacketSize)
 
-	assert.Equal(t, "secret", cfg.HttpSecret)
-	assert.Equal(t, "user", cfg.BasicAuthUser)
-	assert.Equal(t, "password", cfg.BasicAuthPass)
+	assert.Equal(t, "secret", AppConfig().HttpSecret)
+	assert.Equal(t, "user", AppConfig().BasicAuthUser)
+	assert.Equal(t, "password", AppConfig().BasicAuthPass)
 
-	assert.Equal(t, time.Millisecond*100, cfg.WriteTimeout)
-	assert.Equal(t, time.Millisecond*100, cfg.ReadTimeout)
-	assert.Equal(t, time.Second*5, cfg.ShutdownTimeout)
-	assert.Equal(t, time.Hour*12, cfg.CleanupInterval)
-	assert.Equal(t, time.Hour*48, cfg.TTL)
+	assert.Equal(t, time.Millisecond*100, AppConfig().WriteTimeout)
+	assert.Equal(t, time.Millisecond*100, AppConfig().ReadTimeout)
+	assert.Equal(t, time.Second*5, AppConfig().ShutdownTimeout)
+	assert.Equal(t, time.Hour*12, AppConfig().CleanupInterval)
+	assert.Equal(t, time.Hour*48, AppConfig().TTL)
 }
 
 func TestLoadConfig_ValidationErrorMessage_SingleField(t *testing.T) {
@@ -269,7 +269,7 @@ burst = 1000
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	_, err := LoadConfig(path)
+	err := LoadConfig(path)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "config validation error:")
 	assert.Contains(t, err.Error(), "Port has wrong value `70000` [must be port")
@@ -301,7 +301,7 @@ burst = 1000
 	path := createTempConfigFile(t, content)
 	defer os.Remove(path)
 
-	_, err := LoadConfig(path)
+	err := LoadConfig(path)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "config validation error:")
 	assert.Contains(t, err.Error(), "MaxConnections has wrong value `0` [must be required ]")
