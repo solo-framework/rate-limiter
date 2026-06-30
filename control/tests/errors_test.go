@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"ratelimiter/control"
-
 	"github.com/stretchr/testify/assert"
+	"ratelimiter/control"
 )
 
 func TestValidationError(t *testing.T) {

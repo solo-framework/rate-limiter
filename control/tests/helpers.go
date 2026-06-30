@@ -10,10 +10,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"ratelimiter/control"
 	"ratelimiter/internal/logger"
-
-	"github.com/stretchr/testify/require"
 )
 
 func addTrackingMiddleware(logger logger.ILogger, mhandler http.HandlerFunc) http.Handler {

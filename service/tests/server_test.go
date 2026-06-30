@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/internal/config"
-	"ratelimiter/service"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"ratelimiter/internal/config"
+	"ratelimiter/service"
 )
 
 func Test_Server_Start_Stop(t *testing.T) {

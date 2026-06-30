@@ -10,9 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/internal/config"
-
 	"github.com/stretchr/testify/require"
+	"ratelimiter/internal/config"
 )
 
 type noopLogger struct{}

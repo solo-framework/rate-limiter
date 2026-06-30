@@ -4,13 +4,12 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
 	interrs "ratelimiter/internal/errors"
 	"ratelimiter/service"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func createControlMethods(t *testing.T) *control.ControlMethods {

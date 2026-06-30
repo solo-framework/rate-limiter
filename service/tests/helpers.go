@@ -7,9 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/service"
-
 	"github.com/stretchr/testify/require"
+	"ratelimiter/service"
 )
 
 func getRandomPort(t *testing.T) uint {

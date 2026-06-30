@@ -5,10 +5,9 @@ import (
 	"io"
 	"strings"
 	"testing"
+	_ "unsafe"
 
 	"ratelimiter/control"
-
-	_ "unsafe"
 )
 
 type trackingReadCloser struct {

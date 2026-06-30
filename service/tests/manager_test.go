@@ -11,12 +11,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/errors"
 	"ratelimiter/service"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var groups = config.NewGroupList()

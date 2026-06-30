@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/internal/config"
-
 	"github.com/stretchr/testify/require"
+	"ratelimiter/internal/config"
 )
 
 func captureStdout(t *testing.T, fn func()) string {

@@ -8,12 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logtest"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRouter_GetHandlers(t *testing.T) {

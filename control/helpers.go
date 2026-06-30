@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"ratelimiter/internal/logger"
-
 	"github.com/google/uuid"
+	"ratelimiter/internal/logger"
 )
 
 type contextKey string

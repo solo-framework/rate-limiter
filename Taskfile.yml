@@ -51,15 +51,16 @@ tasks:
         #     find $module -type f -name '*.go' ! -path '*/mocks/*' ! -path '*/proto/*'  -exec {{.GOFUMPT}} -extra -w {} +
         #   fi
         # done
-      # - |
-      #   echo "🎯 Сортируем импорты через gci ..."
+      - |
+        echo "🎯 Сортируем импорты через gci ..."
+        find ./ -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI_CLI}} write -s standard -s default {} +
 
-      #   for module in {{.MODULES}}; do
-      #     if [ -d "$module" ]; then
-      #       echo "🎯 Сортируем импорты в $module"
-      #       find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/olezhek28/microservices-course-olezhek-solution)" {} +
-      #     fi
-      #   done
+        # for module in {{.MODULES}}; do
+        #   if [ -d "$module" ]; then
+        #     echo "🎯 Сортируем импорты в $module"
+        #     find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/olezhek28/microservices-course-olezhek-solution)" {} +
+        #   fi
+        # done
 
 
   # default:

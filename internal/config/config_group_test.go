@@ -3,10 +3,9 @@ package config
 import (
 	"testing"
 
-	"ratelimiter/internal/errors"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"ratelimiter/internal/errors"
 )
 
 func Test_GroupList_List(t *testing.T) {

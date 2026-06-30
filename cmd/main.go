@@ -5,12 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	// _ "net/http/pprof"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	// _ "net/http/pprof"
-	"os"
 	// "os/signal"
 	// "ratelimiter/control"
 	"ratelimiter/internal"
@@ -18,9 +18,6 @@ import (
 	"ratelimiter/internal/closer"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
-	// "go.uber.org/zap"
-	// "ratelimiter/service"
-	// "syscall"
 )
 
 var (

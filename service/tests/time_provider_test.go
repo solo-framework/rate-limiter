@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/service"
-
 	"github.com/stretchr/testify/assert"
+	"ratelimiter/service"
 )
 
 func TestTimeProvider_NowInRange(t *testing.T) {

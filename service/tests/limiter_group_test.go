@@ -5,10 +5,9 @@ import (
 	"sync"
 	"testing"
 
-	"ratelimiter/service"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"ratelimiter/service"
 )
 
 func TestLimiterGroup_AddGetRemoveCount(t *testing.T) {

@@ -7,10 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"ratelimiter/service"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"ratelimiter/service"
 )
 
 type errConn struct {

@@ -11,10 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestControlServer_Health(t *testing.T) {
