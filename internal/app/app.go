@@ -22,15 +22,11 @@ func New(ctx context.Context, mode string) (*app, error) {
 		return nil, err
 	}
 
-	// panic("FOOOOOOOOOOOO")
-
 	return app, nil
-	// return app, fmt.Errorf("FOOOOOOOOOOOO")
 }
 
 func (s *app) Run(ctx context.Context) error {
 
-	// return fmt.Errorf("FOOOOOOOOOOOO")
 	<-ctx.Done()
 	return nil
 }

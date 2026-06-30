@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
+	"os/signal"
 	"ratelimiter/internal/logger"
 	"sync"
 	"time"
@@ -22,19 +24,20 @@ type Closer struct {
 	logger logger.ILogger                //slog.Logger                   // Используемый логгер
 }
 
-var globalCloser = create(logger.DummyLogger())
+// var globalCloser = create(logger.DummyLogger())
+var globalCloser *Closer = create()
 
 // global functions
 
 // handleSignals обрабатывает системные сигналы и вызывает CloseAll с fresh shutdown context
-func (s *Closer) handleSignals(appContext context.Context) {
-	// ch := make(chan os.Signal, 1)
-	// signal.Notify(ch, signals...)
-	// defer signal.Stop(ch)
+func (s *Closer) handleSignals(signals ...os.Signal) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, signals...)
+	defer signal.Stop(ch)
 
 	select {
-	// case <-ch:
-	case <-appContext.Done():
+	case <-ch:
+
 		s.logger.Info("🛑 Получен системный сигнал, начинаем graceful shutdown...")
 
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
@@ -47,6 +50,24 @@ func (s *Closer) handleSignals(appContext context.Context) {
 	case <-s.done:
 		// CloseAll уже был вызван вручную, просто выходим
 		s.logger.Info("CloseAll уже был вызван вручную")
+	}
+}
+
+// handleContext обрабатыает системные сигналы, полученные из контекста и вызывает CloseAll с fresh shutdown context
+func (s *Closer) handleContext(appContext context.Context) {
+	select {
+	case <-appContext.Done():
+		s.logger.Info("🛑 Получен системный сигнал, начинаем graceful shutdown...")
+
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer shutdownCancel()
+
+		if err := s.CloseAll(shutdownCtx); err != nil {
+			s.logger.Error("❌ Ошибка при закрытии ресурсов", slog.Any("error", err))
+		}
+
+	case <-s.done:
+		// CloseAll уже был вызван вручную, просто выходим
 	}
 }
 
@@ -155,10 +176,16 @@ func SetLogger(logger logger.ILogger) {
 	globalCloser.SetLogger(logger)
 }
 
-func create(log *slog.Logger) *Closer {
+// func createWithLogger(log *slog.Logger) *Closer {
+// 	return &Closer{
+// 		done:   make(chan struct{}),
+// 		logger: log,
+// 	}
+// }
+
+func create() *Closer {
 	return &Closer{
-		done:   make(chan struct{}),
-		logger: log,
+		done: make(chan struct{}),
 	}
 }
 
@@ -166,8 +193,13 @@ func (s *Closer) SetLogger(logger logger.ILogger) {
 	s.logger = logger
 }
 
-func ConfigureWithContext(appContext context.Context) {
-	go globalCloser.handleSignals(appContext)
+func ConfigureWithContext(appContext context.Context, logger logger.ILogger) {
+	SetLogger(logger)
+	go globalCloser.handleContext(appContext)
+}
+
+func ConfigureWithSignals(signals ...os.Signal) {
+	go globalCloser.handleSignals(signals...)
 }
 
 // AddNamed добавляет функцию закрытия с именем зависимости для логирования в глобальный closer
