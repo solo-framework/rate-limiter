@@ -32,7 +32,6 @@ var (
 )
 
 func main() {
-
 	env, ok := os.LookupEnv("RATE_LIMITER_ENV")
 	if !ok {
 		env = "prod"
@@ -44,7 +43,7 @@ func main() {
 	flag.Parse()
 
 	if *v {
-		fmt.Printf("ratelimiter version %s, date %s, commit %s\n", version, date, commit)
+		fmt.Printf("ratelimiter version %s, date %s, commit %s\n", version, date, commit) // nolint
 		os.Exit(0)
 	}
 
@@ -54,14 +53,14 @@ func main() {
 	}
 
 	if *configPath == "" {
-		fmt.Println("config file not defined")
+		fmt.Println("config file not defined") // nolint
 		flag.Usage()
 		os.Exit(2)
 	}
 
 	err := config.LoadConfig(*configPath)
 	if err != nil {
-		fmt.Printf("config load failed: %v", err)
+		fmt.Printf("config load failed: %v", err) // nolint
 		os.Exit(1)
 	}
 
@@ -103,7 +102,6 @@ func main() {
 }
 
 func gracefulShutdown() {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

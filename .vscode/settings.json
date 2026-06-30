@@ -5,6 +5,7 @@
 	// настройки language сервера для подветки кода
 	"gopls": {
 		"ui.semanticTokens": true,
+		"formatting.gofumpt": true,
 	},
 	"editor.semanticTokenColorCustomizations": {
 		// курсив - интерфейсы
