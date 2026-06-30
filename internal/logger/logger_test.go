@@ -47,6 +47,7 @@ func captureStdout(t *testing.T, fn func()) string {
 func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
 
 	output := captureStdout(t, func() {
+		ReinitLogger()
 		InitLogger("dev")
 		logger := GetLogger()
 		logger.Info("hello")
@@ -71,6 +72,7 @@ func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
 func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
 
 	output := captureStdout(t, func() {
+		ReinitLogger()
 		InitLogger("prod")
 		logger := GetLogger()
 		logger.Info("hello")
@@ -96,6 +98,7 @@ func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
 func TestLogger_SecretReplace(t *testing.T) {
 
 	output := captureStdout(t, func() {
+		ReinitLogger()
 		InitLogger("dev")
 		logger := GetLogger()
 		logger.Debug("hello", "config", getConfig())

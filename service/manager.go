@@ -245,17 +245,18 @@ func (s *Manager) SaveGoupsToFile(dir string) error {
 	return nil
 }
 
-func (s *Manager) LoadGroupsFromFile(dir string) (bool, error) {
+func (s *Manager) LoadGroupsFromFile(dir string) (int, error) {
 
+	count := 0
 	file := "/data.bin"
 	dir = strings.TrimSuffix(dir, "/") + file
 
 	data, err := os.ReadFile(dir)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return false, nil
+			return count, nil
 		}
-		return false, fmt.Errorf("load groups from file error: %w", err)
+		return count, fmt.Errorf("load groups from file error: %w", err)
 	}
 
 	type tmp struct {
@@ -268,7 +269,7 @@ func (s *Manager) LoadGroupsFromFile(dir string) (bool, error) {
 	dec := gob.NewDecoder(bytes.NewReader(data))
 
 	if err := dec.Decode(&loaded); err != nil {
-		return false, fmt.Errorf("decode groups error: %w", err)
+		return count, fmt.Errorf("decode groups error: %w", err)
 	}
 
 	for _, g := range loaded {
@@ -277,12 +278,13 @@ func (s *Manager) LoadGroupsFromFile(dir string) (bool, error) {
 			if errors.Is(err, ErrGroupExists) {
 				err = s.UpdateGroup(g.Name, g.Rate, g.Burst)
 				if err != nil {
-					return false, fmt.Errorf("load groups from file error[update]: %w", err)
+					return count, fmt.Errorf("load groups from file error[update]: %w", err)
 				}
 				continue
 			}
-			return false, fmt.Errorf("load groups from file error[add]: %w", err)
+			return count, fmt.Errorf("load groups from file error[add]: %w", err)
 		}
 	}
-	return true, nil
+
+	return len(loaded), nil
 }

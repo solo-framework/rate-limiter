@@ -692,7 +692,8 @@ func Test_Manager_SaveToFile_And_LoadFromFile(t *testing.T) {
 	// load saved groups from file
 	loaded, loadErr := targetManager.LoadGroupsFromFile(tmpDir)
 	require.NoError(t, loadErr)
-	require.True(t, loaded)
+	// require.True(t, loaded)
+	require.Equal(t, 2, loaded)
 
 	type data struct {
 		Name  string  `json:"name"`
@@ -729,7 +730,8 @@ func Test_Manager_LoadFromFile_NotFound(t *testing.T) {
 
 	loaded, loadErr := manager.LoadGroupsFromFile(t.TempDir())
 	require.NoError(t, loadErr)
-	require.False(t, loaded)
+	// require.False(t, loaded)
+	require.Equal(t, 0, loaded)
 }
 
 func Test_Manager_LoadFromFile_BadFile(t *testing.T) {
@@ -759,7 +761,8 @@ func Test_Manager_LoadFromFile_BadFile(t *testing.T) {
 
 	loaded, loadErr := manager.LoadGroupsFromFile(dir)
 	require.Error(t, loadErr)
-	require.False(t, loaded)
+	// require.False(t, loaded)
+	require.Equal(t, 0, loaded)
 }
 
 type expiredTimeProvider struct {

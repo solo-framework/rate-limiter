@@ -17,19 +17,19 @@ type ILogger interface {
 var globalLogger *slog.Logger
 
 // var mu sync.Mutex
-var initOnce sync.Once
+var initOnce sync.Once = sync.Once{}
+
+// ReinitLogger for unit test only
+func ReinitLogger() {
+	initOnce = sync.Once{}
+}
 
 // InitLogger creates new logger or
-func InitLogger(env string) {
-
-	// mu.Lock()
-	// defer mu.Unlock()
-
-	// if globalLogger == nil {
-
-	// var lgr *slog.Logger
+func InitLogger(env string, args ...any) {
 
 	initOnce.Do(func() {
+
+		var handler slog.Handler
 
 		if env == "dev" {
 			opts := slog.HandlerOptions{
@@ -37,8 +37,7 @@ func InitLogger(env string) {
 				Level:     slog.LevelDebug,
 			}
 
-			handler := slog.NewTextHandler(os.Stdout, &opts)
-			globalLogger = slog.New(handler)
+			handler = slog.NewTextHandler(os.Stdout, &opts)
 
 		} else {
 
@@ -47,14 +46,16 @@ func InitLogger(env string) {
 				Level:     slog.LevelInfo,
 			}
 
-			handler := slog.NewJSONHandler(os.Stdout, &opts)
+			handler = slog.NewJSONHandler(os.Stdout, &opts)
+		}
+
+		if len(args) > 0 {
+			globalLogger = slog.New(handler).With(args...)
+		} else {
 			globalLogger = slog.New(handler)
 		}
 	})
-	// globalLogger = lgr
-	// }
 
-	// })
 }
 
 func CloseLogger() {

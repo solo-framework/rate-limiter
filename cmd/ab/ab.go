@@ -46,7 +46,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				defer tcpConn.Close()
+				defer tcpConn.Close() // nolint
 
 				conn, ok := tcpConn.(*net.TCPConn)
 				if !ok {
