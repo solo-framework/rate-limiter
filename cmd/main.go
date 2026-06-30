@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os/signal"
 	"syscall"
+	"time"
 
 	// _ "net/http/pprof"
 	"os"
@@ -63,38 +64,35 @@ func main() {
 	}
 
 	stopSignals := []os.Signal{syscall.SIGINT, syscall.SIGTERM}
-
 	appCtx, appCancel := signal.NotifyContext(context.Background(), stopSignals...)
-	defer appCancel()
-	defer gracefulShutdown()
+
+	logger.InitLogger(env)
+	closer.SetLogger(logger.GetLogger())
+	closer.ConfigureWithContext(appCtx)
 
 	defer func() {
 		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
-				logger.GetLogger().Error("PANIC", slog.Any("error", e)) // нужно ли???
-			} else {
-				logger.GetLogger().Error("PANIC", slog.Any("error", r))
-			}
+			logger.GetLogger().Error("PANIC", slog.Any("error", r))
+			os.Exit(1)
 		}
 	}()
+
+	defer gracefulShutdown()
+	defer appCancel()
 
 	application, err := app.New(appCtx, env)
 	if err != nil {
 		logger.GetLogger().Error("❌ Не удалось создать приложение", slog.Any("error", err))
-		return
+		panic("Не удалось создать приложение")
 	}
-
-	closer.ConfigureWithContext(appCtx)
 
 	err = application.Run(appCtx)
 	if err != nil {
 		logger.GetLogger().Error("❌ Не удалось запустить приложение", slog.Any("error", err))
-		return
+		panic("Не удалось запустить приложение")
 	}
 
-	// <-appCtx.Done()
-	// fmt.Println("FINISH")
-	logger.GetLogger().Info("finish")
+	// logger.GetLogger().Info("finish")
 	// os.Exit(0)
 
 	// logger
@@ -206,12 +204,13 @@ func main() {
 
 func gracefulShutdown() {
 
-	// fmt.Println("!!!!!!!!!!!!!!!!graceful shutdown!!!!!!!!!!!!!!")
-	logger.GetLogger().Info("!!!!!!!!!!!!!!!!graceful shutdown!!!!!!!!!!!!!!")
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	// if err := closer.CloseAll(ctx); err != nil {
-	// 	logger.Error(ctx, "❌ Ошибка при завершении работы", zap.Error(err))
-	// }
+	if err := closer.CloseAll(ctx); err != nil {
+		logger.GetLogger().Error("❌ Ошибка при завершении работы", slog.Any("error", err))
+		return
+	}
+
+	logger.GetLogger().Info("graceful shutdown завершен")
 }

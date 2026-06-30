@@ -33,6 +33,7 @@ func (s *Closer) handleSignals(appContext context.Context) {
 	// defer signal.Stop(ch)
 
 	select {
+	// case <-ch:
 	case <-appContext.Done():
 		s.logger.Info("🛑 Получен системный сигнал, начинаем graceful shutdown...")
 
@@ -177,4 +178,8 @@ func AddNamed(name string, f func(context.Context) error) {
 // Add добавляет функции закрытия в глобальный closer
 func Add(f ...func(context.Context) error) {
 	globalCloser.Add(f...)
+}
+
+func CloseAll(ctx context.Context) error {
+	return globalCloser.CloseAll(ctx)
 }
