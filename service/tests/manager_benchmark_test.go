@@ -2,15 +2,15 @@ package tests
 
 import (
 	"fmt"
-	cfg "ratelimiter/internal/config"
-	"ratelimiter/service"
 	"sync"
 	"testing"
 	"time"
+
+	cfg "ratelimiter/internal/config"
+	"ratelimiter/service"
 )
 
 func Benchmark_GetLimiter(b *testing.B) {
-
 	if testing.Short() {
 		b.Skipf("Benchmark_GetLimiter skipped in short mode")
 	}
@@ -35,11 +35,9 @@ func Benchmark_GetLimiter(b *testing.B) {
 
 		wg.Add(1)
 		go func() {
-
 			wg.Done()
 			time.Sleep(10 * time.Millisecond)
 			_, _ = manager.GetLimiter(grName, userId)
-
 		}()
 
 	}

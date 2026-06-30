@@ -7,11 +7,12 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"ratelimiter/control"
-	"ratelimiter/internal/config"
 	"strings"
 	"testing"
 	"time"
+
+	"ratelimiter/control"
+	"ratelimiter/internal/config"
 
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +33,6 @@ func TestControlServer_Health(t *testing.T) {
 
 func TestControlServer_Start(t *testing.T) {
 	t.Run("returns error when listen fails", func(t *testing.T) {
-
 		// get a random port
 		ln, err := net.Listen("tcp", "127.0.0.1:0")
 		require.NoError(t, err)
@@ -49,7 +49,6 @@ func TestControlServer_Start(t *testing.T) {
 	})
 
 	t.Run("shutdown", func(t *testing.T) {
-
 		// we can't get actual port what gets server when it is configured with port 0.
 		// So pick a free random port, then reuse it in server
 		ln, err := net.Listen("tcp", "127.0.0.1:0")

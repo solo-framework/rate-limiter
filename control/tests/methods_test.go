@@ -2,24 +2,23 @@ package tests
 
 import (
 	"errors"
+	"testing"
+
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
 	interrs "ratelimiter/internal/errors"
 	"ratelimiter/service"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func createControlMethods(t *testing.T) *control.ControlMethods {
-
 	t.Helper()
 
 	groups := config.NewGroupList()
 	_ = groups.Add("default", 10, 10)
 	mgr, err := service.NewManager(*groups, 10, 10, service.NewTimeProvider())
-
 	if err != nil {
 		require.NoError(t, err, "failed to create manager: %v")
 	}
@@ -27,7 +26,6 @@ func createControlMethods(t *testing.T) *control.ControlMethods {
 }
 
 func Test_ControlMethods_AddGroup(t *testing.T) {
-
 	cm := createControlMethods(t)
 
 	t.Run("OK", func(t *testing.T) {
@@ -76,7 +74,6 @@ func Test_ControlMethods_AddGroup(t *testing.T) {
 	})
 
 	t.Run("unknown error", func(t *testing.T) {
-
 		origInvalidDataErr := interrs.ErrInvalidData
 		// replace service.ErrInvalidData with nil to test unknown error branch in IF condition
 		interrs.ErrInvalidData = nil
@@ -102,7 +99,6 @@ func Test_ControlMethods_AddGroup(t *testing.T) {
 }
 
 func Test_ControlMethods_GetStat(t *testing.T) {
-
 	cm := createControlMethods(t)
 	req := createDummyHttpRequest("")
 
@@ -116,7 +112,6 @@ func Test_ControlMethods_GetStat(t *testing.T) {
 }
 
 func Test_ControlMethods_GetInfo(t *testing.T) {
-
 	cm := createControlMethods(t)
 	req := createDummyHttpRequest("")
 
@@ -133,7 +128,6 @@ func Test_ControlMethods_DeleteGroup(t *testing.T) {
 	cm := createControlMethods(t)
 
 	t.Run("group not exists", func(t *testing.T) {
-
 		req := createDummyHttpRequest(`{"name": "non_existing_blablablablalba"}`)
 		res, err := cm.DeleteGroup(req)
 
@@ -142,7 +136,6 @@ func Test_ControlMethods_DeleteGroup(t *testing.T) {
 	})
 
 	t.Run("del default", func(t *testing.T) {
-
 		req := createDummyHttpRequest(`{"name": "default"}`)
 		res, err := cm.DeleteGroup(req)
 
@@ -156,7 +149,6 @@ func Test_ControlMethods_DeleteGroup(t *testing.T) {
 	})
 
 	t.Run("incorrect json", func(t *testing.T) {
-
 		req := createDummyHttpRequest(`{"name`)
 		res, err := cm.DeleteGroup(req)
 
@@ -164,14 +156,12 @@ func Test_ControlMethods_DeleteGroup(t *testing.T) {
 		assert.ErrorAs(t, err, &outErr)
 		assert.Nil(t, res)
 	})
-
 }
 
 func Test_ControlMethods_UpdateGroup(t *testing.T) {
 	cm := createControlMethods(t)
 
 	t.Run("group not found", func(t *testing.T) {
-
 		req := createDummyHttpRequest(`{"name":"non_existing","rate":5.5,"burst":70}`)
 		res, err := cm.UpdateGroup(req)
 
@@ -190,7 +180,6 @@ func Test_ControlMethods_UpdateGroup(t *testing.T) {
 	})
 
 	t.Run("OK", func(t *testing.T) {
-
 		req := createDummyHttpRequest(`{"name":"default","rate":10000,"burst":10000}`)
 		res, err := cm.UpdateGroup(req)
 
@@ -216,7 +205,6 @@ func Test_ControlMethods_UpdateGroup(t *testing.T) {
 	})
 
 	t.Run("unknown error", func(t *testing.T) {
-
 		origInvalidDataErr := interrs.ErrInvalidData
 		// replace service.ErrInvalidData with nil to test unknown error branch in IF condition
 		interrs.ErrInvalidData = nil

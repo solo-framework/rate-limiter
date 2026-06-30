@@ -1,12 +1,12 @@
 package tests
 
 import (
-	"ratelimiter/internal/config"
 	"time"
+
+	"ratelimiter/internal/config"
 )
 
 func getConfig() *config.Config {
-
 	var config *config.Config = &config.Config{
 		Port:            0, // random port
 		MaxConnections:  9,

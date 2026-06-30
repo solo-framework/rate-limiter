@@ -2,9 +2,10 @@ package tests
 
 import (
 	"fmt"
-	"ratelimiter/service"
 	"sync"
 	"testing"
+
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

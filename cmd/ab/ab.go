@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	defer func() {
 		fmt.Println("END!")
 	}()
@@ -29,7 +28,6 @@ func main() {
 	wg := sync.WaitGroup{}
 
 	for {
-
 		select {
 		case <-ctx.Done():
 			fmt.Println("TIMEOUT")
@@ -40,7 +38,6 @@ func main() {
 			time.Sleep(time.Millisecond * 5)
 
 			wg.Go(func() {
-
 				time.Sleep(time.Millisecond * 100)
 
 				tcpConn, err := net.Dial("tcp", "localhost:49105")
@@ -72,5 +69,4 @@ func main() {
 			})
 		}
 	}
-
 }

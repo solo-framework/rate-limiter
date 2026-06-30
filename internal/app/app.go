@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+
 	"ratelimiter/control"
 	"ratelimiter/internal/closer"
 	"ratelimiter/internal/config"
@@ -18,7 +19,6 @@ type app struct {
 type dependencyFunc func(context.Context) error
 
 func New(ctx context.Context, mode string) (*app, error) {
-
 	app := &app{
 		mode: mode,
 	}
@@ -32,7 +32,6 @@ func New(ctx context.Context, mode string) (*app, error) {
 }
 
 func (s *app) Run(ctx context.Context) error {
-
 	// httpLogger := logger.With("app", "http")
 	// // start control server
 	// methods := control.NewControlMethods(manager)
@@ -76,7 +75,6 @@ func (s *app) Run(ctx context.Context) error {
 
 	// 2. start manager.StartCleanup()
 	go func() {
-
 		defer func() {
 			if r := recover(); r != nil {
 				errCh <- fmt.Errorf("ServiceManager StartCleanup failed: %s", r)
@@ -97,7 +95,6 @@ func (s *app) Run(ctx context.Context) error {
 	// 3. start limiter service
 
 	go func() {
-
 		defer func() {
 			if r := recover(); r != nil {
 				errCh <- fmt.Errorf("panic in limiter service: %s", r)
@@ -159,7 +156,6 @@ func (s *app) initDI(_ context.Context) error {
 }
 
 func (s *app) loadSavedGroups(_ context.Context) error {
-
 	manager := s.di.ServiceManager()
 	count, err := manager.LoadGroupsFromFile(config.AppConfig().StorePath)
 	if err != nil {

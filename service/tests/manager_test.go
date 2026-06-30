@@ -7,23 +7,21 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"ratelimiter/internal/config"
-	"ratelimiter/internal/errors"
-	"ratelimiter/service"
 	"sync"
 	"testing"
 	"time"
+
+	"ratelimiter/internal/config"
+	"ratelimiter/internal/errors"
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	groups = config.NewGroupList()
-)
+var groups = config.NewGroupList()
 
 func TestMain(m *testing.M) {
-
 	// setup
 	err := groups.Add("default", 5, 10)
 	if err != nil {
@@ -32,19 +30,17 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	//teardown
+	// teardown
 
 	os.Exit(code)
 }
 
 func Test_time_provider(t *testing.T) {
-
 	tp := service.NewTimeProvider()
 	assert.NotNil(t, tp)
 }
 
 func Test_Manager_No_Group(t *testing.T) {
-
 	cfg := getConfig()
 
 	groups := config.NewGroupList()
@@ -84,7 +80,6 @@ func Test_Manager_New_wrong_cleanupInterval(t *testing.T) {
 }
 
 func Test_Manager_err_empty_groups(t *testing.T) {
-
 	cfg := getConfig()
 	groups := config.NewGroupList()
 	manager, err := service.NewManager(*groups, cfg.TTL, cfg.CleanupInterval, getTimeProvider())
@@ -95,7 +90,6 @@ func Test_Manager_err_empty_groups(t *testing.T) {
 }
 
 func Test_Manager_err_group_not_found(t *testing.T) {
-
 	cfg := getConfig()
 	manager, err := service.NewManager(*groups, cfg.TTL, cfg.CleanupInterval, getTimeProvider())
 
@@ -110,7 +104,6 @@ func Test_Manager_err_group_not_found(t *testing.T) {
 }
 
 func Test_Manager_get_Allow_ok(t *testing.T) {
-
 	cfg := getConfig()
 	groups = config.NewGroupList()
 	err := groups.Add("lala", 5, 10)
@@ -174,7 +167,6 @@ func Test_Allow_not_existing_group(t *testing.T) {
 }
 
 func Test_Manager_GetIngo(t *testing.T) {
-
 	cfg := getConfig()
 	groups = config.NewGroupList()
 
@@ -256,11 +248,9 @@ func Test_Manager_AddGroup_via_Method(t *testing.T) {
 		_, ok := stat["gr1"]
 		assert.True(t, ok)
 	})
-
 }
 
 func Test_Manager_AddGroup_via_Ctor(t *testing.T) {
-
 	cfg := getConfig()
 	groups = config.NewGroupList()
 
@@ -348,14 +338,12 @@ func Test_Manager_UpdateGroup(t *testing.T) {
 	})
 
 	t.Run("non existing group", func(t *testing.T) {
-
 		_, err = manager.Allow("gr1", "user-1")
 		require.NoError(t, err)
 
 		err = manager.UpdateGroup("gr_wrong_name", 1000.0, 1000)
 		require.ErrorIs(t, err, service.ErrGroupNotFound)
 	})
-
 }
 
 func Test_Allow_set_lastuse(t *testing.T) {
@@ -392,11 +380,9 @@ func Test_Allow_set_lastuse(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, tl)
 	assert.Equal(t, int64(1), tl.GetLastUse())
-
 }
 
 func Test_Cleanup_Concurrency(t *testing.T) {
-
 	// just verify code does not crash due to race conditions
 
 	if testing.Short() {
@@ -404,7 +390,6 @@ func Test_Cleanup_Concurrency(t *testing.T) {
 	}
 
 	defer func() {
-
 		ok := true
 		if r := recover(); r != nil {
 			ok = false
@@ -452,7 +437,6 @@ func Test_Cleanup_Concurrency(t *testing.T) {
 
 	// continuously generate limiters in each group
 	go func() {
-
 		c := 0
 		for {
 			c++
@@ -519,7 +503,6 @@ func Test_Cleanup_Concurrency(t *testing.T) {
 }
 
 func Test_Cleanup_expired(t *testing.T) {
-
 	if testing.Short() {
 		t.Skipf("Benchmark_GetLimiter skipped in short mode")
 	}
@@ -545,7 +528,6 @@ func Test_Cleanup_expired(t *testing.T) {
 	// generate limiters in each group
 	go func() {
 		for _, g := range groupSourse {
-
 			for i := range 1000 {
 				_, _ = manager.Allow(g, fmt.Sprintf("userid_%d", i))
 				// if err1 != nil {
@@ -573,7 +555,6 @@ func Test_Cleanup_expired(t *testing.T) {
 	assert.Equal(t, 0, stat["g1"])
 	assert.Equal(t, 0, stat["g2"])
 	assert.Equal(t, 0, stat["g3"])
-
 }
 
 func Test_Manager_UpdateGroup_Concurrency(t *testing.T) {
@@ -735,7 +716,6 @@ func Test_Manager_LoadFromFile_NotFound(t *testing.T) {
 }
 
 func Test_Manager_LoadFromFile_BadFile(t *testing.T) {
-
 	cfg := getConfig()
 	baseGroups := config.NewGroupList()
 	err := baseGroups.Add("api", 1, 1)

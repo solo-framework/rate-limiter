@@ -3,8 +3,9 @@ package tests
 import (
 	"errors"
 	"net/http"
-	"ratelimiter/control"
 	"testing"
+
+	"ratelimiter/control"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,7 +25,6 @@ func TestValidationError(t *testing.T) {
 	}
 
 	assert.True(t, err.NeedLogging(), "expected NeedToBeLogged true")
-
 }
 
 func TestInternalError(t *testing.T) {

@@ -3,19 +3,18 @@ package tests
 import (
 	"fmt"
 	"net"
-	"ratelimiter/internal/config"
-	"ratelimiter/service"
-
 	"sync"
 	"testing"
 	"time"
+
+	"ratelimiter/internal/config"
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Server_Start_Stop(t *testing.T) {
-
 	config := &config.Config{
 		Port:            0, // random port
 		MaxConnections:  9,
@@ -47,7 +46,6 @@ func Test_Server_Start_Stop(t *testing.T) {
 }
 
 func Test_Server_request_OK(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 
@@ -79,7 +77,6 @@ func Test_Server_request_OK(t *testing.T) {
 }
 
 func Test_handleConnection_panic(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 
@@ -111,7 +108,6 @@ func Test_handleConnection_panic(t *testing.T) {
 }
 
 func Test_read_timeout(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 	config.ReadTimeout = 1 * time.Millisecond
@@ -170,7 +166,6 @@ func Test_request_too_large_returns_invalid_data_without_reset(t *testing.T) {
 }
 
 func Test_TooManyConnections(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 	config.MaxConnections = 5
@@ -196,9 +191,7 @@ func Test_TooManyConnections(t *testing.T) {
 	addr := &net.TCPAddr{Port: int(config.Port)}
 
 	for i := range n {
-
 		wg.Go(func() {
-
 			client := newClient(addr)
 			defer client.Close()
 
@@ -233,7 +226,6 @@ func Test_TooManyConnections(t *testing.T) {
 }
 
 func Test_shutdown_timeout(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 
@@ -255,9 +247,7 @@ func Test_shutdown_timeout(t *testing.T) {
 	// start many requests
 	n := 20
 	for i := range n {
-
 		go func() {
-
 			client := newClient(addr)
 			defer client.Close()
 
@@ -269,7 +259,6 @@ func Test_shutdown_timeout(t *testing.T) {
 
 			// // read response
 			_, _ = client.Read()
-
 		}()
 	}
 
@@ -285,7 +274,6 @@ func Test_shutdown_timeout(t *testing.T) {
 }
 
 func Test_shutdown_graceful(t *testing.T) {
-
 	config := getConfig()
 	config.Port = getRandomPort(t)
 
@@ -307,9 +295,7 @@ func Test_shutdown_graceful(t *testing.T) {
 	// start many requests
 	n := 20
 	for i := range n {
-
 		go func() {
-
 			client := newClient(addr)
 			defer client.Close()
 
@@ -321,7 +307,6 @@ func Test_shutdown_graceful(t *testing.T) {
 
 			// // read response
 			_, _ = client.Read()
-
 		}()
 	}
 

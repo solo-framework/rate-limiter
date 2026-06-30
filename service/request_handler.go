@@ -2,13 +2,13 @@ package service
 
 import (
 	"errors"
+	"strings"
+
 	interrs "ratelimiter/internal/errors"
 	"ratelimiter/internal/logger"
-	"strings"
 )
 
 type IRequestHandler interface {
-
 	// all business logic is handled here
 	Handle(data []byte) []byte
 }
@@ -39,14 +39,12 @@ func NewRequestHandler(limitManager IManager, logger logger.ILogger) *RequestHan
 // If the group is not found, it returns RESPONSE_ERROR_GROUP_NOT_FOUND response.
 // If some internal error occurs, it returns RESPONSE_ERROR_INTERNAL response.
 func (s *RequestHandler) Handle(data []byte) []byte {
-
 	groupName, clientId, err := s.ExtractData(data)
 	if err != nil {
 		return []byte(RESPONSE_ERROR_INVALID_DATA)
 	}
 
 	allow, err := s.manager.Allow(groupName, clientId)
-
 	if err != nil {
 		if errors.Is(err, ErrGroupNotFound) {
 			return []byte(RESPONSE_ERROR_GROUP_NOT_FOUND)
@@ -65,7 +63,6 @@ func (s *RequestHandler) Handle(data []byte) []byte {
 }
 
 func (s *RequestHandler) ExtractData(data []byte) (string, string, error) {
-
 	stringData := string(data)
 	stringData = strings.TrimSpace(stringData)
 	parts := strings.Split(stringData, ":")

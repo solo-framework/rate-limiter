@@ -2,12 +2,12 @@ package tests
 
 import (
 	"fmt"
+	"testing"
 
 	"ratelimiter/internal/errors"
 	"ratelimiter/internal/logger"
 	"ratelimiter/service"
 	"ratelimiter/service/tests/mocks"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,7 +15,6 @@ import (
 )
 
 func TestNewRequestHandler(t *testing.T) {
-
 	logger.InitLogger("dev")
 
 	rh := service.NewRequestHandler(
@@ -57,7 +56,6 @@ func TestNewRequestHandler(t *testing.T) {
 // }
 
 func TestRequestHandler_extractData(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		data    []byte
@@ -91,7 +89,6 @@ func TestRequestHandler_extractData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			s := service.NewRequestHandler(getDummyLimitManager(), newLogger())
 			group, user, err := s.ExtractData(tt.data)
 
@@ -106,7 +103,6 @@ func TestRequestHandler_extractData(t *testing.T) {
 }
 
 func Test_Handle_With_Mock(t *testing.T) {
-
 	t.Run("Handle with invalid data", func(t *testing.T) {
 		s := service.NewRequestHandler(&errorLimitManager{}, newLogger())
 
@@ -118,7 +114,6 @@ func Test_Handle_With_Mock(t *testing.T) {
 	mock := mocks.NewMockIManager(ctrl)
 
 	t.Run("Handle with unknown group", func(t *testing.T) {
-
 		mock.EXPECT().Allow(gomock.Any(), gomock.Any()).Return(false, service.ErrGroupNotFound).Times(1)
 
 		s1 := service.NewRequestHandler(mock, newLogger())
@@ -159,7 +154,6 @@ func Test_Handle_With_Mock(t *testing.T) {
 		result := rh.Handle([]byte("default:userok"))
 		assert.Equal(t, []byte(service.RESPONSE_LIMIT), result)
 	})
-
 }
 
 var _ service.IManager = (*errorLimitManager)(nil)
@@ -167,12 +161,12 @@ var _ service.IManager = (*errorLimitManager)(nil)
 type errorLimitManager struct{}
 
 // Allow implements [service.IManager].
-func (e *errorLimitManager) Allow(groupName string, userid string) (bool, error) {
+func (e *errorLimitManager) Allow(groupName, userid string) (bool, error) {
 	panic("unimplemented in errorLimitManager")
 }
 
 // GetLimiter implements [service.IManager].
-func (e *errorLimitManager) GetLimiter(groupName string, userid string) (*service.Limiter, error) {
+func (e *errorLimitManager) GetLimiter(groupName, userid string) (*service.Limiter, error) {
 	return nil, service.ErrGroupNotFound
 }
 
@@ -186,11 +180,11 @@ type fakeLimitManager struct {
 }
 
 // Allow implements [service.IManager].
-func (s *fakeLimitManager) Allow(groupName string, userid string) (bool, error) {
+func (s *fakeLimitManager) Allow(groupName, userid string) (bool, error) {
 	// panic(" fakeLimitManager unimplemented")
 	return s.returnAllow, nil
 }
 
-func (s *fakeLimitManager) GetLimiter(groupName string, userid string) (*service.Limiter, error) {
+func (s *fakeLimitManager) GetLimiter(groupName, userid string) (*service.Limiter, error) {
 	return s.lim, nil
 }

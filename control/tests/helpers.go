@@ -8,9 +8,10 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"testing"
+
 	"ratelimiter/control"
 	"ratelimiter/internal/logger"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +35,6 @@ func decodeJSON(t *testing.T, body []byte) map[string]any {
 }
 
 func createDummyHttpRequest(requestData string) *http.Request {
-
 	reader := bytes.NewReader([]byte(requestData))
 	return httptest.NewRequest("", "/", reader)
 }

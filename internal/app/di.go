@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
@@ -37,7 +38,6 @@ func (s *diContainer) RequestHandler() service.IRequestHandler {
 }
 
 func (s *diContainer) ControlMethods() control.ControlMethods {
-
 	// panic("not implr ControlMethods()")
 	if s.controlMethods == nil {
 		s.controlMethods = control.NewControlMethods(s.ServiceManager())
@@ -47,7 +47,6 @@ func (s *diContainer) ControlMethods() control.ControlMethods {
 }
 
 func (s *diContainer) GetTimeProvider() service.ITimeProvider {
-
 	if s.timeProvider == nil {
 		s.timeProvider = service.NewTimeProvider()
 	}
@@ -64,7 +63,6 @@ func (s *diContainer) ServiceManager() *service.Manager {
 			config.AppConfig().CleanupInterval,
 			s.GetTimeProvider(),
 		)
-
 		if err != nil {
 			panic(fmt.Sprintf("failed to create service manager: %s", err))
 		}

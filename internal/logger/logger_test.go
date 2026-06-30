@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"io"
 	"os"
-	"ratelimiter/internal/config"
-	"time"
-
 	"strings"
 	"testing"
+	"time"
+
+	"ratelimiter/internal/config"
 
 	"github.com/stretchr/testify/require"
 )
@@ -45,7 +45,6 @@ func captureStdout(t *testing.T, fn func()) string {
 }
 
 func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
-
 	output := captureStdout(t, func() {
 		ReinitLogger()
 		InitLogger("dev")
@@ -70,7 +69,6 @@ func TestGetLogger_DevTextHandlerDebugAndSource(t *testing.T) {
 }
 
 func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
-
 	output := captureStdout(t, func() {
 		ReinitLogger()
 		InitLogger("prod")
@@ -96,7 +94,6 @@ func TestGetLogger_ProdJSONInfoLevelNoSource(t *testing.T) {
 }
 
 func TestLogger_SecretReplace(t *testing.T) {
-
 	output := captureStdout(t, func() {
 		ReinitLogger()
 		InitLogger("dev")
@@ -108,11 +105,9 @@ func TestLogger_SecretReplace(t *testing.T) {
 	require.Contains(t, output, "HttpSecret: [censored]")
 	require.Contains(t, output, "BasicAuthUser: [censored]")
 	require.Contains(t, output, "BasicAuthPass: [censored]")
-
 }
 
 func getConfig() *config.Config {
-
 	groups := config.NewGroupList()
 	_ = groups.Add("default", 10.0, 1_000)
 

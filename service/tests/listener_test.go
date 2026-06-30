@@ -4,9 +4,10 @@ import (
 	"errors"
 	"io"
 	"net"
-	"ratelimiter/service"
 	"testing"
 	"time"
+
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,9 +25,11 @@ func (c errConn) RemoteAddr() net.Addr        { return nil }
 func (c errConn) SetDeadline(_ time.Time) error {
 	return nil
 }
+
 func (c errConn) SetReadDeadline(_ time.Time) error {
 	return nil
 }
+
 func (c errConn) SetWriteDeadline(_ time.Time) error {
 	return nil
 }

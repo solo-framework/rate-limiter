@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"ratelimiter/service"
 	"testing"
 	"time"
+
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 )

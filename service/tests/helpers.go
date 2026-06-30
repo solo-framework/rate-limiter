@@ -4,9 +4,10 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"ratelimiter/service"
 	"testing"
 	"time"
+
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +27,6 @@ type client struct {
 }
 
 func newClient(addr net.Addr) *client {
-
 	conn, err := net.Dial("tcp", addr.String())
 	if err != nil {
 		panic(err)
@@ -43,7 +43,6 @@ func newClient(addr net.Addr) *client {
 }
 
 func (c *client) BadWrite(data []byte) {
-
 	// client writes incorrectly: does not close socket for writing after sending data
 	// server cannot fully read the request and should fail by read timeout
 	_, err := c.conn.Write(data)
@@ -53,7 +52,6 @@ func (c *client) BadWrite(data []byte) {
 }
 
 func (c *client) Write(data []byte) error {
-
 	var err error
 
 	// close socket for writing so server receives EOF
@@ -67,7 +65,6 @@ func (c *client) Write(data []byte) error {
 }
 
 func (c *client) Read() ([]byte, error) {
-
 	data, err := io.ReadAll(c.conn)
 	if err != nil {
 		return nil, err
@@ -93,15 +90,13 @@ func NewHandlerWithDelay(delayMs int) *handlerWithDelay {
 }
 
 func (h *handlerWithDelay) Handle(data []byte) []byte {
-
 	time.Sleep(time.Millisecond * time.Duration(h.delayMs))
 	return data
 }
 
 // --------------------------
 
-type dummyHandler struct {
-}
+type dummyHandler struct{}
 
 func newDummyHandler() *dummyHandler {
 	return &dummyHandler{}
@@ -111,8 +106,7 @@ func (h dummyHandler) Handle(data []byte) []byte {
 	return data
 }
 
-type panicHandler struct {
-}
+type panicHandler struct{}
 
 func newPanicHandler() *panicHandler {
 	return &panicHandler{}
@@ -124,8 +118,7 @@ func (h panicHandler) Handle(data []byte) []byte {
 
 // --------------------------
 
-type dummyLogger struct {
-}
+type dummyLogger struct{}
 
 // With implements [ratelimiter.ILogger].
 func (l *dummyLogger) With(args ...any) *slog.Logger {

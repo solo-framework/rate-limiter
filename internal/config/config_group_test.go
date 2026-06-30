@@ -1,15 +1,15 @@
 package config
 
 import (
-	"ratelimiter/internal/errors"
 	"testing"
+
+	"ratelimiter/internal/errors"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_GroupList_List(t *testing.T) {
-
 	list := NewGroupList()
 	_ = list.Add("test1", 5, 10)
 	_ = list.Add("test2", 5, 10)
@@ -21,7 +21,6 @@ func Test_GroupList_List(t *testing.T) {
 }
 
 func Test_GroupList_Add(t *testing.T) {
-
 	type fields struct {
 		name  string
 		rate  float64
@@ -106,7 +105,6 @@ func Test_GroupList_Add(t *testing.T) {
 
 		gl := NewGroupList()
 		err := gl.Add(tt.fields.name, tt.fields.rate, tt.fields.burst)
-
 		if err != nil {
 			require.ErrorIs(t, err, errors.ErrInvalidData)
 			require.NotEmpty(t, tt.errStr, "Test %s expects an error, but got NIL", tt.name)

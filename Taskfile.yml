@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  GOFUMPT_VERSION: 'v0.10.0'
+  GCI_VERSION: 'v0.14.0'
+
+  # dirs
+  BIN_DIR: '{{.ROOT_DIR}}/bin'
+  GOFUMPT_CLI: '{{.BIN_DIR}}/gofumpt'
+  GCI_CLI: '{{.BIN_DIR}}/gci'
+
+tasks:
+
+  install-tools:
+    desc: Установка утилит (gofumpt)
+    cmds:
+      - |
+        [ -f {{.GOFUMPT_CLI}} ] || {
+          echo '📦 Устанавливаем gofumpt {{.GOFUMPT_VERSION}}...'
+          GOBIN={{.BIN_DIR}} go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
+        }
+        [ -f {{.GCI_CLI}} ] || {
+          echo '📦 Устанавливаем gci {{.GCI_VERSION}}...'
+          GOBIN={{.BIN_DIR}} go install github.com/daixiang0/gci@{{.GCI_VERSION}}
+        }
+    status:
+      - test -x {{.GOFUMPT_CLI}}
+      - test -x {{.GCI_CLI}}
+
+  format:
+    desc: "Форматирует весь проект gofumpt + gci, исключая mocks"
+    summary: |
+      Форматирует все Go-файлы проекта с использованием gofumpt для стандартизации кода
+      и gci для сортировки импортов, исключая файлы в директориях mocks.
+
+      Использует инструменты:
+        - gofumpt: для стандартизации форматирования
+        - gci: для сортировки импортов по стандартным группам
+    deps: [ install-tools ]
+    cmds:
+      - |
+        echo "🧼 Форматируем через gofumpt ..."
+        find ./ -type f -name '*.go' ! -path '*/mocks/*' ! -path '*/proto/*' -exec {{.GOFUMPT_CLI}} -extra -w {} +
+
+
+        # for module in {{.MODULES}}; do
+        #   if [ -d "$module" ]; then
+        #     echo "🧼 Форматируем $module"
+        #     find $module -type f -name '*.go' ! -path '*/mocks/*' ! -path '*/proto/*'  -exec {{.GOFUMPT}} -extra -w {} +
+        #   fi
+        # done
+      # - |
+      #   echo "🎯 Сортируем импорты через gci ..."
+
+      #   for module in {{.MODULES}}; do
+      #     if [ -d "$module" ]; then
+      #       echo "🎯 Сортируем импорты в $module"
+      #       find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/olezhek28/microservices-course-olezhek-solution)" {} +
+      #     fi
+      #   done
+
+
+  # default:
+  #   desc: Print a greeting message
+  #   cmds:
+  #     - echo "{{.GREETING}}"
+
+  #   silent: true
+

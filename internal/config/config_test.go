@@ -52,7 +52,6 @@ burst = 1000
 	defer os.Remove(path) // nolint
 
 	err := LoadConfig(path)
-
 	// check no error
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -81,7 +80,6 @@ func Test_LoadConfig_FileNotFound(t *testing.T) {
 }
 
 func Test_LoadConfig_InvalidFormat(t *testing.T) {
-
 	content := `
 [[Groups]]
 Name (typo here) "invalid name"

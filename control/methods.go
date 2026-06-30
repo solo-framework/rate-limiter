@@ -3,9 +3,10 @@ package control
 import (
 	"errors"
 	"net/http"
+	"runtime"
+
 	interrs "ratelimiter/internal/errors"
 	"ratelimiter/service"
-	"runtime"
 )
 
 type ControlMethods struct {
@@ -13,7 +14,6 @@ type ControlMethods struct {
 }
 
 func NewControlMethods(manager *service.Manager) *ControlMethods {
-
 	cm := &ControlMethods{
 		manager: manager,
 	}
@@ -21,14 +21,12 @@ func NewControlMethods(manager *service.Manager) *ControlMethods {
 }
 
 func (s *ControlMethods) EnableProfiling(r *http.Request) (any, error) {
-
 	runtime.SetBlockProfileRate(5)
 	runtime.SetMutexProfileFraction(5)
 	return true, nil
 }
 
 func (s *ControlMethods) DisableProfiling(r *http.Request) (any, error) {
-
 	runtime.SetBlockProfileRate(0)
 	runtime.SetMutexProfileFraction(0)
 	return true, nil
@@ -45,9 +43,7 @@ func (s *ControlMethods) GetInfo(r *http.Request) (any, error) {
 }
 
 func (s *ControlMethods) AddGroup(r *http.Request) (any, error) {
-
 	req, err := DecodeRequest[addGroupRequest](r.Body)
-
 	if err != nil {
 		return nil, NewValidationError("incorrect data", err)
 	}
@@ -74,7 +70,6 @@ func (s *ControlMethods) AddGroup(r *http.Request) (any, error) {
 }
 
 func (s *ControlMethods) DeleteGroup(r *http.Request) (any, error) {
-
 	req, err := DecodeRequest[deleteGroupRequest](r.Body)
 	if err != nil {
 		return nil, NewValidationError("incorrect data", err)
@@ -85,7 +80,6 @@ func (s *ControlMethods) DeleteGroup(r *http.Request) (any, error) {
 }
 
 func (s *ControlMethods) UpdateGroup(r *http.Request) (any, error) {
-
 	req, err := DecodeRequest[updateGroupRequest](r.Body)
 	if err != nil {
 		return nil, NewValidationError("incorrect data", err)

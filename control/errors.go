@@ -5,11 +5,12 @@ import (
 	"net/http"
 )
 
-var ErrJsonDecode = errors.New("json decode error")
-var ErrWriteResponse = errors.New("write response error")
+var (
+	ErrJsonDecode    = errors.New("json decode error")
+	ErrWriteResponse = errors.New("write response error")
+)
 
 type IKnownError interface {
-
 	// GetStatus returns HTTP status for client error response.
 	GetStatus() int
 

@@ -28,7 +28,6 @@ type Config struct {
 	BasicAuthPass   string        `log:"false"` // basic auth password
 	StorePath       string        // path to store limiters
 	Groups          GroupList     // list of groups
-
 }
 
 var globalConfig *Config
@@ -38,7 +37,6 @@ func AppConfig() *Config {
 }
 
 func (s *Config) String() string {
-
 	sb := strings.Builder{}
 
 	val := reflect.ValueOf(s)
@@ -94,7 +92,6 @@ type groupsDTO struct {
 }
 
 func LoadConfig(path string) error {
-
 	// see https://deepwiki.com/spf13/viper/1.2-key-concepts#precedence-rules
 	v := viper.New()
 	v.SetConfigFile(path)

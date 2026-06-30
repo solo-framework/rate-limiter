@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"ratelimiter/internal/logger"
 	"runtime/debug"
+
+	"ratelimiter/internal/logger"
 )
 
 // MaxBodySizeMiddleware limits body of POST request for security reason
@@ -13,7 +14,6 @@ import (
 func MaxBodySizeMiddleware(limit int64) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			if r.Method == http.MethodPost ||
 				r.Method == http.MethodPatch ||
 				r.Method == http.MethodPut ||
@@ -31,7 +31,6 @@ func MaxBodySizeMiddleware(limit int64) func(http.Handler) http.Handler {
 func TrackingMiddleware(logger logger.ILogger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			trackId := GenerateTrackId()
 			log := logger.With("track_id", trackId)
 

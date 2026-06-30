@@ -12,8 +12,7 @@ func NewTimeProvider() *TimeProvider {
 	return &TimeProvider{}
 }
 
-type TimeProvider struct {
-}
+type TimeProvider struct{}
 
 func (t *TimeProvider) Now() int64 {
 	return time.Now().Unix()

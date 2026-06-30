@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"testing"
+
 	"ratelimiter/control"
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logtest"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -53,7 +54,6 @@ func TestRouter_Auth(t *testing.T) {
 	router := control.NewRouter(*cm, cfg, getDummyLogger())
 
 	t.Run("request with good X-Auth-Token", func(t *testing.T) {
-
 		req := httptest.NewRequest(http.MethodGet, "/stat", nil)
 		req.Header.Add("X-Auth-Token", "secret")
 		recorder := httptest.NewRecorder()
@@ -101,11 +101,9 @@ func TestRouter_Auth(t *testing.T) {
 		require.NotEmpty(t, rec.Header().Get("X-Track-Id"))
 		logtest.AssertLogContainsMessage(t, logH, "access denied")
 	})
-
 }
 
 func TestRouter_BasicAuth(t *testing.T) {
-
 	cm := createControlMethods(t)
 	cfg := config.Config{
 		// HttpSecret:    "secret",
@@ -115,7 +113,6 @@ func TestRouter_BasicAuth(t *testing.T) {
 	router := control.NewRouter(*cm, cfg, getDummyLogger())
 
 	t.Run("requires basic auth", func(t *testing.T) {
-
 		req := httptest.NewRequest(http.MethodGet, "/test", nil)
 		rec := httptest.NewRecorder()
 
@@ -133,7 +130,6 @@ func TestRouter_BasicAuth(t *testing.T) {
 	})
 
 	t.Run("requires basic auth OK", func(t *testing.T) {
-
 		called := false
 		handler := router.BasicAuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -152,7 +148,6 @@ func TestRouter_BasicAuth(t *testing.T) {
 	})
 
 	t.Run("requires basic auth WRONG PASS", func(t *testing.T) {
-
 		called := false
 		handler := router.BasicAuthMiddleware(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -172,13 +167,11 @@ func TestRouter_BasicAuth(t *testing.T) {
 }
 
 func TestRouter_MainHandler(t *testing.T) {
-
 	cm := createControlMethods(t)
 	cfg := config.Config{HttpSecret: "secret"}
 	router := control.NewRouter(*cm, cfg, getDummyLogger())
 
 	t.Run("handle panic", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 
 		called := false
@@ -204,7 +197,6 @@ func TestRouter_MainHandler(t *testing.T) {
 
 		logtest.AssertLogContainsMessage(t, logH, "[PANIC]")
 		logtest.AssertLogContainsAttr(t, logH, "panic", "integer divide by zero")
-
 	})
 
 	t.Run("requires auth token", func(t *testing.T) {
@@ -229,7 +221,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("returns success response", func(t *testing.T) {
-
 		logger, _ := logtest.NewTestLogger()
 
 		main := router.MainHandler(func(r *http.Request) (any, error) {
@@ -250,11 +241,9 @@ func TestRouter_MainHandler(t *testing.T) {
 		out := decodeJSON(t, rec.Body.Bytes())
 		require.Equal(t, false, out["error"])
 		require.Equal(t, "ok", out["data"].(map[string]any)["value"])
-
 	})
 
 	t.Run("returns managed error response", func(t *testing.T) {
-
 		handler := router.MainHandler(func(r *http.Request) (any, error) {
 			return nil, control.NewValidationError("bad input", errors.New("inner"))
 		}, false)
@@ -273,7 +262,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("returns managed error without wrapped error", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
 
@@ -302,7 +290,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("returns managed error with wrapped error", func(t *testing.T) {
-
 		// logger := getLoggerWithRecord()
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
@@ -333,7 +320,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("returns unhandled error", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
 
@@ -361,7 +347,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("SendResponse json decode error", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
 
@@ -385,7 +370,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("SendError json decode error", func(t *testing.T) {
-
 		// log := getLoggerWithRecord()
 		log, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, log)
@@ -417,7 +401,6 @@ func TestRouter_MainHandler(t *testing.T) {
 	})
 
 	t.Run("sendError write error", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
 
@@ -433,11 +416,9 @@ func TestRouter_MainHandler(t *testing.T) {
 		logtest.AssertLogContainsMessage(t, logH, "SendError write error")
 		logtest.AssertLogContainsAttr(t, logH, "error", "write response error")
 		logtest.AssertLogContainsAttr(t, logH, "track_id", rec.Header().Get("X-Track-Id"))
-
 	})
 
 	t.Run("sendResponse write error", func(t *testing.T) {
-
 		logger, logH := logtest.NewTestLogger()
 		router = control.NewRouter(*cm, cfg, logger)
 
@@ -456,9 +437,7 @@ func TestRouter_MainHandler(t *testing.T) {
 		logtest.AssertLogContainsAttr(t, logH, "error", "some writer error")
 		logtest.AssertLogContainsAttr(t, logH, "track_id", rec.Header().Get("X-Track-Id"))
 		logtest.AssertLogContainsAttr(t, logH, "error", "write response error")
-
 	})
-
 }
 
 func TestRouter_SendError(t *testing.T) {
@@ -499,7 +478,6 @@ func TestRouter_SendError(t *testing.T) {
 }
 
 func TestRouter_SendResponse(t *testing.T) {
-
 	cm := createControlMethods(t)
 	cfg := config.Config{HttpSecret: "secret"}
 	router := control.NewRouter(*cm, cfg, getDummyLogger())
@@ -529,7 +507,6 @@ func TestRouter_SendResponse(t *testing.T) {
 	})
 
 	t.Run("JSON encode error", func(t *testing.T) {
-
 		rec := httptest.NewRecorder()
 		err := router.SendResponse(rec, func() {}, http.StatusOK)
 
@@ -546,7 +523,6 @@ func TestRouter_SendResponse(t *testing.T) {
 		require.NotErrorIs(t, err, control.ErrJsonDecode)
 		assert.Contains(t, err.Error(), "some writer error")
 	})
-
 }
 
 func TestRouter_GenerateTrackId(t *testing.T) {

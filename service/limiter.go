@@ -26,7 +26,6 @@ func NewLimiter(rateVal float64, burstVal int) *Limiter {
 }
 
 func (s *Limiter) GetLastUse() int64 {
-
 	return s.lastUse.Load()
 }
 

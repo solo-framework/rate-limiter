@@ -7,9 +7,10 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"ratelimiter/internal/config"
 	"testing"
 	"time"
+
+	"ratelimiter/internal/config"
 
 	"github.com/stretchr/testify/require"
 )
@@ -314,7 +315,6 @@ func Test_acceptConnections_enqueuesAndStopsOnClosed(t *testing.T) {
 }
 
 func Test_startWorkers_handlesConnectionFromTasks(t *testing.T) {
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

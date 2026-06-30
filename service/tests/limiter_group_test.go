@@ -1,10 +1,11 @@
 package tests
 
 import (
-	"ratelimiter/service"
 	"strconv"
 	"sync"
 	"testing"
+
+	"ratelimiter/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

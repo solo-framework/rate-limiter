@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/pprof"
+
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
 )
@@ -22,7 +23,6 @@ type Router struct {
 }
 
 func NewRouter(methods ControlMethods, config config.Config, logger logger.ILogger) *Router {
-
 	handlers := make(map[string]http.HandlerFunc)
 
 	r := &Router{
@@ -57,7 +57,6 @@ func (s *Router) GetHandlers() map[string]http.HandlerFunc {
 
 func (s *Router) BasicAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		user, pass, ok := r.BasicAuth()
 		userMatch := (subtle.ConstantTimeCompare([]byte(user), []byte(s.config.BasicAuthUser)) == 1)
 		passwordMatch := (subtle.ConstantTimeCompare([]byte(pass), []byte(s.config.BasicAuthPass)) == 1)
@@ -72,9 +71,7 @@ func (s *Router) BasicAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Router) MainHandler(fn HttpFunc, checkAuth bool) http.HandlerFunc {
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		log := GetLoggerFromContext(r.Context())
 
 		// Checking secret token stays here for now. Can be moved to middleware later
@@ -92,7 +89,6 @@ func (s *Router) MainHandler(fn HttpFunc, checkAuth bool) http.HandlerFunc {
 
 		// execute handler
 		res, err := fn(r)
-
 		if err != nil {
 			var me IKnownError
 
@@ -154,7 +150,6 @@ func (s *Router) MainHandler(fn HttpFunc, checkAuth bool) http.HandlerFunc {
 }
 
 func (s *Router) SendResponse(w http.ResponseWriter, data any, code int) error {
-
 	if data == nil {
 		data = "{}"
 	}
@@ -170,7 +165,6 @@ func (s *Router) SendResponse(w http.ResponseWriter, data any, code int) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, err = w.Write(out)
-
 	if err != nil {
 		err = errors.Join(err, ErrWriteResponse)
 		return fmt.Errorf("SendResponse write error: %w", err)
@@ -179,7 +173,6 @@ func (s *Router) SendResponse(w http.ResponseWriter, data any, code int) error {
 }
 
 func (s *Router) SendError(w http.ResponseWriter, data any, code int) error {
-
 	if data == nil {
 		data = "{}"
 	}
@@ -200,7 +193,6 @@ func (s *Router) SendError(w http.ResponseWriter, data any, code int) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, err = w.Write(out)
-
 	if err != nil {
 		err = errors.Join(err, ErrWriteResponse)
 		return fmt.Errorf("SendError write error: %w", err)

@@ -7,9 +7,10 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"ratelimiter/internal/logger"
 	"sync"
 	"time"
+
+	"ratelimiter/internal/logger"
 )
 
 // shutdownTimeout по умолчанию, можно сделать параметром
@@ -21,7 +22,7 @@ type Closer struct {
 	once   sync.Once                     // Гарантия однократного вызова CloseAll
 	done   chan struct{}                 // Канал для оповещения о завершении
 	funcs  []func(context.Context) error // Зарегистрированные функции закрытия
-	logger logger.ILogger                //slog.Logger                   // Используемый логгер
+	logger logger.ILogger                // slog.Logger                   // Используемый логгер
 }
 
 // var globalCloser = create(logger.DummyLogger())

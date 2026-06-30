@@ -3,10 +3,11 @@ package tests
 import (
 	"bytes"
 	"io"
-	"ratelimiter/control"
-
 	"strings"
 	"testing"
+
+	"ratelimiter/control"
+
 	_ "unsafe"
 )
 

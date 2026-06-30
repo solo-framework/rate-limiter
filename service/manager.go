@@ -7,17 +7,18 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"ratelimiter/internal/config"
-	"ratelimiter/internal/validator"
 	"strings"
 	"sync"
 	"time"
+
+	"ratelimiter/internal/config"
+	"ratelimiter/internal/validator"
 )
 
 //go:generate mockgen -source=manager.go -destination=tests/mocks/manager_mock.go -package=mocks
 type IManager interface {
-	GetLimiter(groupName string, clientId string) (*Limiter, error)
-	Allow(groupName string, clientId string) (bool, error)
+	GetLimiter(groupName, clientId string) (*Limiter, error)
+	Allow(groupName, clientId string) (bool, error)
 }
 
 var _ IManager = (*Manager)(nil)
@@ -31,8 +32,7 @@ type Manager struct {
 	timeProv        ITimeProvider
 }
 
-func NewManager(groupsSettings config.GroupList, ttl time.Duration, cleanupInterval time.Duration, timeProv ITimeProvider) (*Manager, error) {
-
+func NewManager(groupsSettings config.GroupList, ttl, cleanupInterval time.Duration, timeProv ITimeProvider) (*Manager, error) {
 	if len(groupsSettings.List()) == 0 {
 		return nil, fmt.Errorf("NewManager error: %w", ErrNoGroups)
 	}
@@ -61,8 +61,7 @@ func NewManager(groupsSettings config.GroupList, ttl time.Duration, cleanupInter
 	}, nil
 }
 
-func (s *Manager) Allow(groupName string, clientId string) (bool, error) {
-
+func (s *Manager) Allow(groupName, clientId string) (bool, error) {
 	s.mu.RLock()
 	group, ok := s.groups[groupName]
 	if !ok {
@@ -73,8 +72,7 @@ func (s *Manager) Allow(groupName string, clientId string) (bool, error) {
 	return group.Allow(clientId), nil
 }
 
-func (s *Manager) GetLimiter(groupName string, clientId string) (*Limiter, error) {
-
+func (s *Manager) GetLimiter(groupName, clientId string) (*Limiter, error) {
 	s.mu.RLock()
 	group, ok := s.groups[groupName]
 	if !ok {
@@ -90,7 +88,6 @@ func (s *Manager) GetLimiter(groupName string, clientId string) (*Limiter, error
 }
 
 func (s *Manager) StartCleanup() {
-
 	ticker := time.NewTicker(s.cleanupInterval)
 	defer ticker.Stop()
 	wg := sync.WaitGroup{}
@@ -115,7 +112,6 @@ func (s *Manager) StopCleanup() {
 
 // GetStat returns a map of group name with limiter counts.
 func (s *Manager) GetStat() map[string]int {
-
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -128,7 +124,6 @@ func (s *Manager) GetStat() map[string]int {
 }
 
 func (s *Manager) GetInfo() any {
-
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -149,7 +144,6 @@ func (s *Manager) GetInfo() any {
 
 // CleanUp removes limiters that have not been used for a long time.
 func (s *Manager) CleanUp() {
-
 	wg := sync.WaitGroup{}
 	threshold := s.timeProv.Now() - int64(s.ttl.Seconds())
 
@@ -192,7 +186,6 @@ func (s *Manager) AddGroup(name string, rateValue float64, burstValue int) error
 }
 
 func (s *Manager) UpdateGroup(groupName string, newRate float64, newBurst int) error {
-
 	if err := validator.ValidateGroup(groupName, newRate, newBurst); err != nil {
 		return err
 	}
@@ -210,7 +203,6 @@ func (s *Manager) UpdateGroup(groupName string, newRate float64, newBurst int) e
 }
 
 func (s *Manager) SaveGoupsToFile(dir string) error {
-
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -239,14 +231,13 @@ func (s *Manager) SaveGoupsToFile(dir string) error {
 		return fmt.Errorf("encode groups error: %w", err)
 	}
 
-	if err := os.WriteFile(dir, buf.Bytes(), 0600); err != nil {
+	if err := os.WriteFile(dir, buf.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("save groups to file error: %w", err)
 	}
 	return nil
 }
 
 func (s *Manager) LoadGroupsFromFile(dir string) (int, error) {
-
 	count := 0
 	file := "/data.bin"
 	dir = strings.TrimSuffix(dir, "/") + file

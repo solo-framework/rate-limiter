@@ -14,3 +14,4 @@ build/
 docker/build/out
 data.bin
 *.class
+bin/

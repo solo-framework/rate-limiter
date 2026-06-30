@@ -26,9 +26,7 @@ func ReinitLogger() {
 
 // InitLogger creates new logger or
 func InitLogger(env string, args ...any) {
-
 	initOnce.Do(func() {
-
 		var handler slog.Handler
 
 		if env == "dev" {
@@ -55,7 +53,6 @@ func InitLogger(env string, args ...any) {
 			globalLogger = slog.New(handler)
 		}
 	})
-
 }
 
 func CloseLogger() {
@@ -64,7 +61,6 @@ func CloseLogger() {
 
 // GetLogger  return if exists
 func GetLogger() *slog.Logger {
-
 	if globalLogger == nil {
 		panic("globalLogger is not initialized, call InitLogger()")
 	}

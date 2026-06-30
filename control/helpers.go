@@ -3,9 +3,10 @@ package control
 import (
 	"context"
 	"log/slog"
-	"ratelimiter/internal/logger"
 	"strconv"
 	"time"
+
+	"ratelimiter/internal/logger"
 
 	"github.com/google/uuid"
 )
@@ -25,7 +26,6 @@ func GetTrackID(ctx context.Context) string {
 }
 
 func GenerateTrackId() (res string) {
-
 	var err error
 	res = ""
 
@@ -46,7 +46,7 @@ func GenerateTrackId() (res string) {
 
 	guid, err := uuid.NewV7()
 	res = guid.String()
-	return
+	return res
 }
 
 // GetLoggerFromContext return logger from context (set in middleware)

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"ratelimiter/internal/config"
-	"ratelimiter/internal/logger"
 	"sync"
 	"time"
+
+	"ratelimiter/internal/config"
+	"ratelimiter/internal/logger"
 )
 
 type Server struct {
@@ -27,7 +28,6 @@ type Server struct {
 }
 
 func NewServer(logger logger.ILogger, config *config.Config, requestHandler IRequestHandler) *Server {
-
 	ctx, cancelFn := context.WithCancel(context.Background())
 
 	return &Server{
@@ -49,7 +49,6 @@ func NewServer(logger logger.ILogger, config *config.Config, requestHandler IReq
 }
 
 func (s *Server) Start() error {
-
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.config.Port))
 	if err != nil {
 		return err
@@ -74,7 +73,6 @@ func (s *Server) acceptConnections() {
 			return
 		default:
 			conn, err := s.listener.Accept()
-
 			if err != nil {
 				if errors.Is(err, ErrTooManyConnections) {
 					s.logger.Warn("too many connections")
@@ -101,7 +99,6 @@ func (s *Server) acceptConnections() {
 }
 
 func (s *Server) startWorkers() {
-
 	for i := 0; i < s.config.WorkerPoolSize; i++ {
 		s.workersWg.Add(1)
 		go func(i int) {
@@ -122,7 +119,6 @@ func (s *Server) startWorkers() {
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
-
 	s.connWg.Add(1)
 	defer s.connWg.Done()
 
@@ -160,7 +156,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handleWriteError(err error) bool {
-
 	if err != nil {
 		// client did not read data; nothing else to do
 		if errors.Is(err, ErrWriteTimeout) {
@@ -176,7 +171,6 @@ func (s *Server) handleWriteError(err error) bool {
 }
 
 func (s *Server) handleReadError(conn net.Conn, err error, writeTimeout time.Duration) bool {
-
 	if err != nil {
 
 		// incoming package was too large, so we must read all client data and then close a connection
@@ -219,7 +213,6 @@ func (s *Server) handleReadError(conn net.Conn, err error, writeTimeout time.Dur
 }
 
 func (s *Server) writeResponse(conn net.Conn, data []byte, writeTimeout time.Duration) error {
-
 	err := conn.SetWriteDeadline(time.Now().Add(writeTimeout))
 	if err != nil {
 		return fmt.Errorf("writeResponse set write deadline: %w", err)
@@ -246,7 +239,6 @@ func (s *Server) writeResponse(conn net.Conn, data []byte, writeTimeout time.Dur
 // if read timeout occurs, it returns nil and ErrReadTimeout
 
 func (s *Server) readFromConnection(conn net.Conn, size int, readTimeout time.Duration) ([]byte, error) {
-
 	err := conn.SetReadDeadline(time.Now().Add(readTimeout))
 	if err != nil {
 		return nil, fmt.Errorf("readFromConnection set read deadline: %w", err)
@@ -255,7 +247,6 @@ func (s *Server) readFromConnection(conn net.Conn, size int, readTimeout time.Du
 	// we don't know was package bigger then package_size, so read +1
 	limitReader := io.LimitReader(conn, int64(size+1))
 	data, err := io.ReadAll(limitReader)
-
 	if err != nil {
 		var i interface{ Timeout() bool }
 
@@ -273,7 +264,6 @@ func (s *Server) readFromConnection(conn net.Conn, size int, readTimeout time.Du
 
 // / cleanConnection
 func (s *Server) cleanConnection(conn net.Conn, readTimeout time.Duration) {
-
 	err := conn.SetReadDeadline(time.Now().Add(readTimeout))
 	if err != nil {
 		s.logger.Error("cleanConnection set read deadline error", "error", err)
@@ -294,7 +284,6 @@ func (s *Server) cleanConnection(conn net.Conn, readTimeout time.Duration) {
 }
 
 func (s *Server) Shutdown() error {
-
 	s.shutMutex.Lock()
 	if s.shutdownStarted {
 		s.logger.Warn("server is already shutting down")

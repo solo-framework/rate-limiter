@@ -48,7 +48,7 @@ func NewTestHandler() *TestHandler {
 
 // Enabled checks if logging is enabled
 func (s *TestHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return true //log all in tests
+	return true // log all in tests
 }
 
 // Handle handles a log record

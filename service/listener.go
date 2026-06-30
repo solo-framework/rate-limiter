@@ -20,7 +20,6 @@ func NewLimitedConnection(sem chan struct{}, conn net.Conn) LimitedConnection {
 }
 
 func (c LimitedConnection) Close() error {
-
 	<-c.sem // release slot on connection close
 	err := c.Conn.Close()
 	if err != nil {
@@ -48,7 +47,6 @@ func NewLimitListener(listener net.Listener, maxConnections int) *LimitListener 
 }
 
 func (l *LimitListener) Accept() (net.Conn, error) {
-
 	conn, err := l.Listener.Accept()
 	if err != nil {
 
@@ -93,7 +91,6 @@ func (l *LimitListener) IsClosed() bool {
 }
 
 func (l *LimitListener) Close() error {
-
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.isClosed = true

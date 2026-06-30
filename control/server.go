@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
+
 	"ratelimiter/internal/config"
 	"ratelimiter/internal/logger"
-	"time"
 )
 
 type HttpFunc func(*http.Request) (any, error)
@@ -19,7 +20,6 @@ type ControlServer struct {
 }
 
 func NewControlServer(config config.Config, logger logger.ILogger, router IRouter) *ControlServer {
-
 	s := &ControlServer{
 		logger: logger,
 		config: config,
@@ -60,14 +60,12 @@ func (s *ControlServer) GetHttpServer() *http.Server {
 }
 
 func (s *ControlServer) handleHealth(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("ok"))
 }
 
 func (s *ControlServer) Start() error {
-
 	err := s.httpSrv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err

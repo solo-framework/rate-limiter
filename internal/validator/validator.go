@@ -2,15 +2,17 @@ package validator
 
 import (
 	"fmt"
-	"ratelimiter/internal/errors"
 	"regexp"
+
+	"ratelimiter/internal/errors"
 )
 
-var pattern string = `^[a-zA-Z0-9_]+$`
-var groupNameRegex regexp.Regexp = *regexp.MustCompile(pattern)
+var (
+	pattern        string        = `^[a-zA-Z0-9_]+$`
+	groupNameRegex regexp.Regexp = *regexp.MustCompile(pattern)
+)
 
 func ValidateGroup(name string, rateValue float64, burstValue int) error {
-
 	if name == "" {
 		return errors.NewError("group name must not be empty", errors.ErrInvalidData)
 	}
